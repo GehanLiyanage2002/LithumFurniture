@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Camera, X, Printer } from "lucide-react";
+import { FileText, Camera, X, Printer, CheckCircle } from "lucide-react";
 import Swal from 'sweetalert2';
 
 export default function AddCreditPage() {
@@ -251,10 +251,13 @@ export default function AddCreditPage() {
         <h1 className="page-title">Provide Goods on Credit</h1>
       </div>
 
-      <div className="card" style={{ maxWidth: '800px' }}>
-        <p className="text-secondary" style={{ marginBottom: '24px' }}>Please fill out all required fields marked with <span style={{ color: 'var(--error)' }}>*</span></p>
+      <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
         
-        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '24px' }}>
+        {/* Left Column - Form */}
+        <div className="card" style={{ flex: '1 1 600px' }}>
+          <p className="text-secondary" style={{ marginBottom: '24px' }}>Please fill out all required fields marked with <span style={{ color: 'var(--error)' }}>*</span></p>
+          
+          <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '24px' }}>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
@@ -333,21 +336,7 @@ export default function AddCreditPage() {
             </div>
           </div>
 
-          <div style={{ padding: '24px', background: 'rgba(0,0,0,0.02)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-            <h4 style={{ marginBottom: '16px', color: 'var(--text-main)' }}>Payment Summary</h4>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span className="text-secondary">Interest Rate:</span>
-              <strong style={{ color: 'var(--primary)' }}>{interestRate}%</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span className="text-secondary">Total Payable:</span>
-              <strong style={{ color: 'var(--primary)' }}>LKR {calculateTotal().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span className="text-secondary">Monthly Installment:</span>
-              <strong style={{ color: 'var(--primary)', fontSize: '1.2rem' }}>LKR {calculateMonthly().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
-            </div>
-          </div>
+          {/* Payment Summary moved to right sidebar */}
 
           <div style={{ marginTop: '8px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Verification Images (Security Hashed)</label>
@@ -410,6 +399,50 @@ export default function AddCreditPage() {
             </button>
           </div>
         </form>
+        </div>
+
+        {/* Right Column - Summary & Info */}
+        <div style={{ width: '380px', display: 'flex', flexDirection: 'column', gap: '24px', position: 'sticky', top: '24px' }}>
+          
+          {/* Payment Summary */}
+          <div className="card" style={{ background: 'var(--primary-light)', border: '1px solid var(--primary)', padding: '24px' }}>
+            <h3 style={{ marginBottom: '20px', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.25rem' }}>
+               Payment Summary
+            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <span style={{ color: '#444', fontWeight: 500 }}>Product Price:</span>
+              <strong>LKR {(parseFloat(productPrice) || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <span style={{ color: '#444', fontWeight: 500 }}>Down Payment:</span>
+              <strong>- LKR {(parseFloat(downPayment) || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <span style={{ color: '#444', fontWeight: 500 }}>Interest Rate:</span>
+              <strong style={{ color: 'var(--warning)' }}>{interestRate}%</strong>
+            </div>
+            <div style={{ borderTop: '1px dashed rgba(139, 90, 43, 0.3)', margin: '16px 0' }}></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <span style={{ color: '#444', fontWeight: 500 }}>Total Payable:</span>
+              <strong style={{ color: 'var(--primary)', fontSize: '1.1rem' }}>LKR {calculateTotal().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', background: 'white', padding: '16px', borderRadius: '8px', marginTop: '16px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+              <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>Monthly Installment:</span>
+              <strong style={{ color: 'var(--success)', fontSize: '1.25rem' }}>LKR {calculateMonthly().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+            </div>
+          </div>
+
+          {/* Credit Guidelines */}
+          <div className="card" style={{ padding: '24px' }}>
+             <h4 style={{ marginBottom: '16px', color: 'var(--text-main)', fontSize: '1.1rem' }}>Credit Guidelines</h4>
+             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+               <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }}/> Ensure NIC images are clear and readable.</li>
+               <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }}/> Customer must be physically present for the photo.</li>
+               <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }}/> Minimum down payment is usually 20% of product price.</li>
+               <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }}/> Double-check the primary mobile number for SMS alerts.</li>
+             </ul>
+          </div>
+        </div>
       </div>
 
       {/* Credit Receipt Modal */}

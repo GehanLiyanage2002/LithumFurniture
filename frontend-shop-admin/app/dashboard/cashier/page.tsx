@@ -203,11 +203,14 @@ export default function CashierPage() {
         <h1 className="page-title">Cashier Checkout</h1>
       </div>
 
-      <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', color: 'var(--primary)' }}>
-          <ShoppingCart size={24} style={{ marginRight: '12px' }} />
-          <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Direct Cash Sale</h3>
-        </div>
+      <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        
+        {/* Left Column - Form */}
+        <div className="card" style={{ flex: '1 1 600px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', color: 'var(--primary)' }}>
+            <ShoppingCart size={24} style={{ marginRight: '12px' }} />
+            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Direct Cash Sale</h3>
+          </div>
 
         <form onSubmit={handleCheckout}>
           <div className="input-group">
@@ -274,23 +277,7 @@ export default function CashierPage() {
             </div>
           </div>
 
-          <div style={{ padding: '24px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid var(--border)', marginBottom: '24px' }}>
-            <h4 style={{ marginBottom: '16px', color: 'var(--text-main)', fontSize: '1.1rem' }}>Transaction Summary</h4>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span className="text-secondary">Subtotal ({(quantity || "1")}x):</span>
-              <strong>LKR {((parseFloat(unitPrice) || 0) * (parseInt(quantity, 10) || 1)).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
-            </div>
-            {discountType !== 'NONE' && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: 'var(--success)' }}>
-                <span>Discount Applied:</span>
-                <strong>- LKR {calculateDiscountAmount().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
-              </div>
-            )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-              <span className="text-secondary" style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Total Payable:</span>
-              <strong style={{ color: 'var(--primary)', fontSize: '1.5rem' }}>LKR {calculateTotal().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
-            </div>
-          </div>
+          {/* Transaction Summary moved to sidebar */}
 
           {message && <p className={message.includes("success") ? "text-success text-center mb-4" : "text-error text-center mb-4"}>{message}</p>}
 
@@ -304,6 +291,44 @@ export default function CashierPage() {
           </div>
         </form>
       </div>
+
+      {/* Right Column - Summary */}
+      <div style={{ width: '380px', display: 'flex', flexDirection: 'column', gap: '24px', position: 'sticky', top: '24px' }}>
+        
+        {/* Transaction Summary moved here */}
+        <div className="card" style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', padding: '24px' }}>
+            <h4 style={{ marginBottom: '20px', color: 'var(--text-main)', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <ShoppingCart size={20} /> Transaction Summary
+            </h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <span className="text-secondary">Subtotal ({(quantity || "1")}x):</span>
+              <strong>LKR {((parseFloat(unitPrice) || 0) * (parseInt(quantity, 10) || 1)).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+            </div>
+            {discountType !== 'NONE' && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', color: 'var(--success)' }}>
+                <span>Discount Applied:</span>
+                <strong>- LKR {calculateDiscountAmount().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+              <span className="text-secondary" style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Total Payable:</span>
+              <strong style={{ color: 'var(--primary)', fontSize: '1.5rem' }}>LKR {calculateTotal().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+            </div>
+        </div>
+
+        {/* Quick Help / Cashier Info */}
+        <div className="card" style={{ padding: '24px' }}>
+           <h4 style={{ marginBottom: '16px', color: 'var(--text-main)', fontSize: '1.1rem' }}>Cashier Guidelines</h4>
+           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+             <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }}/> Verify product condition before checkout.</li>
+             <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }}/> Provide the printed receipt to the customer.</li>
+             <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }}/> Items can be exchanged within 7 days.</li>
+             <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }}/> For discounts above 15%, manager approval is needed.</li>
+           </ul>
+        </div>
+        
+      </div>
+    </div>
 
       {/* Receipt Modal */}
       {receiptData && (
