@@ -8,6 +8,7 @@ interface Product {
   id: string;
   productName: string;
   unitPrice: number;
+  costPrice: number;
   quantity: number;
   category: string;
 }
@@ -21,9 +22,13 @@ export default function ManageStockPage() {
 
   const [productName, setProductName] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
+  const [costPrice, setCostPrice] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [addLoading, setAddLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchProducts = async () => {
     try {
@@ -67,6 +72,7 @@ export default function ManageStockPage() {
         body: JSON.stringify({
           productName,
           unitPrice: parseFloat(unitPrice) || 0,
+          costPrice: parseFloat(costPrice) || 0,
           quantity: parseInt(quantity, 10) || 0,
           category: 'RAW'
         }),
@@ -77,6 +83,7 @@ export default function ManageStockPage() {
       setMessage("Product added successfully!");
       setProductName("");
       setUnitPrice("");
+      setCostPrice("");
       setQuantity("1");
       
       fetchProducts(); // Refresh list
@@ -108,6 +115,9 @@ export default function ManageStockPage() {
   const totalProductTypes = products.length;
   const totalItemsInStock = products.reduce((acc, p) => acc + Number(p.quantity), 0);
   const totalStockValue = products.reduce((acc, p) => acc + (Number(p.unitPrice) * Number(p.quantity)), 0);
+
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const currentProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div>
@@ -145,7 +155,11 @@ export default function ManageStockPage() {
               <input required type="text" className="input-field" value={productName} onChange={e => setProductName(e.target.value)} placeholder="e.g. Teak Wood Sofa" />
             </div>
             <div className="input-group">
-              <label>Unit Price (LKR) <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>Cost Price (Your Cost) <span style={{ color: 'var(--error)' }}>*</span></label>
+              <input required type="number" min="0" step="0.01" className="input-field" value={costPrice} onChange={e => setCostPrice(e.target.value)} placeholder="0.00" />
+            </div>
+            <div className="input-group">
+              <label>Unit Price (Selling Price) <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="number" min="0" step="0.01" className="input-field" value={unitPrice} onChange={e => setUnitPrice(e.target.value)} />
             </div>
             <div className="input-group">
@@ -180,16 +194,19 @@ export default function ManageStockPage() {
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
                     <th style={{ padding: '12px 16px' }}>Product Name</th>
-                    <th style={{ padding: '12px 16px' }}>Unit Price (LKR)</th>
+                    <th style={{ padding: '12px 16px' }}>Cost / Selling Price</th>
                     <th style={{ padding: '12px 16px' }}>Quantity</th>
                     <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map((product) => (
+                  {currentProducts.map((product) => (
                     <tr key={product.id} style={{ borderBottom: '1px solid var(--border)' }}>
                       <td style={{ padding: '16px', fontWeight: '600' }}>{product.productName}</td>
-                      <td style={{ padding: '16px', color: 'var(--primary)', fontWeight: '600' }}>{Number(product.unitPrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                      <td style={{ padding: '16px' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Cost: {Number(product.costPrice || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                        <div style={{ color: 'var(--primary)', fontWeight: '600' }}>Sell: {Number(product.unitPrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                      </td>
                       <td style={{ padding: '16px' }}>
                         <span className={`badge ${product.quantity > 5 ? 'badge-success' : 'badge-primary'}`} style={{ background: product.quantity <= 5 ? 'rgba(220, 38, 38, 0.1)' : undefined, color: product.quantity <= 5 ? 'var(--error)' : undefined }}>
                           {product.quantity} in stock
@@ -210,6 +227,34 @@ export default function ManageStockPage() {
               </table>
             </div>
           )}
+
+          {/* Pagination Controls */}
+          {products.length > 0 && totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderTop: '1px solid var(--border)', background: '#F9FAFB', marginTop: '16px', borderRadius: '0 0 12px 12px' }}>
+              <span className="text-secondary" style={{ fontSize: '0.9rem' }}>
+                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, products.length)} of {products.length} products
+              </span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
+                  disabled={currentPage === 1}
+                  className="btn-outline" 
+                  style={{ padding: '8px 16px' }}
+                >
+                  Previous
+                </button>
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
+                  disabled={currentPage === totalPages}
+                  className="btn-outline" 
+                  style={{ padding: '8px 16px' }}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
 
       </div>

@@ -8,8 +8,11 @@ export class Credit {
   @Column()
   firstName: string;
 
-  @Column()
+  @Column({ nullable: true })
   lastName: string;
+
+  @Column({ unique: true, nullable: true })
+  billNo: string;
 
   @Column()
   nic: string;
@@ -55,6 +58,9 @@ export class Credit {
 
   @Column({ nullable: true })
   nicRearImageHash: string;
+
+  @Column({ nullable: true })
+  customerFaceHash: string;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { CreditCard, CheckCircle, Search, Filter } from "lucide-react";
+import { CreditCard, CheckCircle, Search, Filter, History, User, Hash, Phone, CreditCard as IdCard } from "lucide-react";
 
 interface Credit {
   id: string;
@@ -47,9 +47,13 @@ export default function CreditHistoryPage() {
   const [payLoading, setPayLoading] = useState(false);
   const [paymentsHistory, setPaymentsHistory] = useState<Payment[]>([]);
 
+  // Profile Modal State
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [profileTargetCredit, setProfileTargetCredit] = useState<Credit | null>(null);
+
   // Search, Filter, and Pagination State
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -158,28 +162,27 @@ export default function CreditHistoryPage() {
     }
   };
 
+  const openProfileModal = (credit: Credit) => {
+    setProfileTargetCredit(credit);
+    setProfileModalOpen(true);
+  };
+
   // Filter and Paginate Data
   const filteredCredits = useMemo(() => {
     return credits.filter(c => {
-      const matchesSearch = 
-        `${c.firstName} ${c.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.nic.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.mobile1.includes(searchTerm) ||
-        (c.mobile2 && c.mobile2.includes(searchTerm));
-      
-      const matchesStatus = filterStatus === "ALL" ? true : (c.status || "ACTIVE") === filterStatus;
-      
+      const matchesSearch = c.nic.toLowerCase().includes(searchTerm.toLowerCase()) || c.productName.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === "ALL" || (c.status || "ACTIVE") === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [credits, searchTerm, filterStatus]);
+  }, [credits, searchTerm, statusFilter]);
 
   const totalPages = Math.ceil(filteredCredits.length / itemsPerPage);
-  const paginatedCredits = filteredCredits.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentCredits = filteredCredits.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // Reset page when filters change
+  // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterStatus]);
+  }, [searchTerm, statusFilter]);
 
   return (
     <div>
@@ -191,22 +194,24 @@ export default function CreditHistoryPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '24px', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
           
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
               <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
               <input 
                 type="text" 
-                placeholder="Search Name, NIC, or Mobile..." 
+                placeholder="Search by NIC or Product..." 
+                className="input-field" 
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ padding: '12px 16px 12px 40px', borderRadius: '8px', border: '1px solid var(--border)', outline: 'none', minWidth: '280px', fontSize: '0.95rem' }}
+                onChange={e => setSearchTerm(e.target.value)}
+                style={{ paddingLeft: '40px', marginBottom: 0 }}
               />
             </div>
-            <div style={{ position: 'relative' }}>
-              <Filter size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', pointerEvents: 'none' }} />
+            <div style={{ position: 'relative', minWidth: '200px' }}>
+              <Filter size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
               <select 
-                value={filterStatus} 
-                onChange={(e) => setFilterStatus(e.target.value)}
-                style={{ padding: '12px 16px 12px 40px', borderRadius: '8px', border: '1px solid var(--border)', outline: 'none', background: '#fff', fontSize: '0.95rem', cursor: 'pointer' }}
+                className="input-field" 
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+                style={{ paddingLeft: '40px', marginBottom: 0 }}
               >
                 <option value="ALL">All Statuses</option>
                 <option value="ACTIVE">Active</option>
@@ -225,64 +230,79 @@ export default function CreditHistoryPage() {
         ) : (
           <>
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--surface-border)', color: 'var(--text-secondary)' }}>
-                    <th style={{ padding: '12px 16px' }}>Date</th>
-                    <th style={{ padding: '12px 16px' }}>Customer Name</th>
-                    <th style={{ padding: '12px 16px' }}>Contact</th>
-                    <th style={{ padding: '12px 16px' }}>Product</th>
-                    <th style={{ padding: '12px 16px' }}>Balance (LKR)</th>
-                    <th style={{ padding: '12px 16px' }}>Duration & Int.</th>
-                    <th style={{ padding: '12px 16px' }}>Status</th>
-                    <th style={{ padding: '12px 16px' }}>Actions</th>
+                  <tr style={{ borderBottom: '2px solid var(--border)', color: 'var(--text-secondary)', backgroundColor: '#F9FAFB' }}>
+                    <th style={{ padding: '16px', fontSize: '0.85rem', textTransform: 'uppercase' }}>Customer & Contact</th>
+                    <th style={{ padding: '16px', fontSize: '0.85rem', textTransform: 'uppercase' }}>Product</th>
+                    <th style={{ padding: '16px', fontSize: '0.85rem', textTransform: 'uppercase' }}>Financials (LKR)</th>
+                    <th style={{ padding: '16px', fontSize: '0.85rem', textTransform: 'uppercase' }}>Status</th>
+                    <th style={{ padding: '16px', fontSize: '0.85rem', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedCredits.map((credit) => {
-                    const remaining = Number(credit.totalPayment) - Number(credit.paidAmount || 0);
+                  {currentCredits.map((credit) => {
                     return (
                     <tr key={credit.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                      <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{new Date(credit.createdAt).toLocaleDateString()}</td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ fontWeight: 'bold' }}>{credit.firstName} {credit.lastName}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>NIC: {credit.nic}</div>
+                      <td style={{ padding: '16px', verticalAlign: 'top' }}>
+                        <div style={{ fontWeight: '700', color: 'var(--text-main)' }}>{credit.firstName} {credit.lastName}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>NIC: {credit.nic}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Mob: {credit.mobile1} {credit.mobile2 ? `/ ${credit.mobile2}` : ''}</div>
+                        {credit.customerFaceHash && (
+                          <div style={{ display: 'inline-block', marginTop: '6px', background: '#ECFDF5', color: '#065F46', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', border: '1px solid #A7F3D0' }}>
+                            👤 Face Verified
+                          </div>
+                        )}
                       </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ fontSize: '0.9rem' }}>{credit.mobile1}</div>
-                        {credit.mobile2 && <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{credit.mobile2}</div>}
+                      <td style={{ padding: '16px', verticalAlign: 'top' }}>
+                        <div style={{ fontWeight: '600', color: 'var(--primary)' }}>{credit.productName}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Months: {credit.months}</div>
+                        {credit.billNo && (
+                          <div style={{ fontSize: '0.85rem', marginTop: '4px', background: '#F3F4F6', display: 'inline-block', padding: '2px 6px', borderRadius: '4px' }}>
+                            Bill: {credit.billNo}
+                          </div>
+                        )}
                       </td>
-                      <td style={{ padding: '12px 16px' }}>{credit.productName}</td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Total: <strong style={{ color: 'var(--text-main)' }}>{Number(credit.totalPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong></div>
-                        <div style={{ fontWeight: 'bold', color: 'var(--error)', fontSize: '1.1rem', marginTop: '4px' }}>Left: {remaining.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
-                        <div style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: '600', marginTop: '4px' }}>Next: {Number(credit.monthlyInstallment).toLocaleString('en-US', {minimumFractionDigits: 2})} / mo</div>
+                      <td style={{ padding: '16px', verticalAlign: 'top' }}>
+                        <div style={{ fontSize: '0.85rem' }}>Total: {Number(credit.totalPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--success)' }}>Paid: {Number(credit.paidAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                        <div style={{ fontWeight: '700', color: 'var(--error)' }}>
+                          Due: {Math.max(0, Number(credit.totalPayment) - Number(credit.paidAmount || 0)).toLocaleString('en-US', {minimumFractionDigits: 2})}
+                        </div>
+                        {credit.status === 'ACTIVE' && (
+                          <div style={{ fontSize: '0.85rem', marginTop: '4px', background: '#FEF3C7', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', color: '#92400E' }}>
+                            Next Installment: {Number(credit.monthlyInstallment).toLocaleString('en-US', {minimumFractionDigits: 2})}
+                          </div>
+                        )}
                       </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div>{credit.months} months</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{credit.interestRate}% Interest</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--success)' }}>{credit.paymentsMade || 0} payments made</div>
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span className={credit.status === 'COMPLETED' ? 'badge badge-success' : 'badge badge-primary'}>
+                      <td style={{ padding: '16px', verticalAlign: 'top' }}>
+                        <span className={(credit.status || 'ACTIVE') === 'COMPLETED' ? 'badge badge-success' : 'badge badge-primary'}>
                           {credit.status || 'ACTIVE'}
                         </span>
                       </td>
-                      <td style={{ padding: '12px 16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        {(credit.status === 'ACTIVE' || !credit.status) && (
-                          <>
+                      <td style={{ padding: '16px', verticalAlign: 'top', textAlign: 'right' }}>
+                        {(credit.status === 'ACTIVE' || !credit.status || credit.status === 'PENDING') && (
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginBottom: '8px' }}>
                             <button 
                               onClick={() => openPayModal(credit)}
                               className="btn-primary" style={{ padding: '8px 12px', fontSize: '0.85rem' }}>
-                              <CreditCard size={16} /> Make Payment
+                              <CreditCard size={14} style={{ marginRight: '6px' }} /> Pay
                             </button>
                             <button 
                               onClick={() => { setSettleTargetId(credit.id); setActualMonths(credit.months.toString()); setSettleModalOpen(true); }}
-                              className="btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 12px', fontSize: '0.85rem' }}>
-                              <CheckCircle size={16} /> Settle Early
+                              className="btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 12px', fontSize: '0.85rem', color: 'var(--success)', borderColor: 'var(--success)' }}>
+                              <CheckCircle size={14} /> Settle
                             </button>
-                          </>
+                          </div>
                         )}
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                          <button onClick={() => openProfileModal(credit)} className="btn-outline" style={{ padding: '8px 12px', fontSize: '0.85rem' }}>
+                            <User size={14} style={{ marginRight: '6px' }} /> Info
+                          </button>
+                          <button onClick={() => openPayModal(credit)} className="btn-outline" style={{ padding: '8px 12px', fontSize: '0.85rem' }}>
+                            <History size={14} style={{ marginRight: '6px' }} /> History
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )})}
@@ -385,24 +405,113 @@ export default function CreditHistoryPage() {
                 </div>
               )}
 
-              <form onSubmit={handlePay}>
-                <div className="input-group">
-                  <label>Months Covered by this Payment</label>
-                  <input required type="number" min="1" max="10" className="input-field" value={payMonthsCovered} onChange={e => handleMonthsCoveredChange(e.target.value)} />
-                  <small className="text-secondary" style={{ marginTop: '6px', display: 'block', fontSize: '0.8rem' }}>If they skipped a month, set this to 2 to record that this payment covers 2 months.</small>
+              {(payTargetCredit.status || 'ACTIVE') !== 'COMPLETED' ? (
+                <form onSubmit={handlePay}>
+                  <div className="input-group">
+                    <label>Months Covered by this Payment</label>
+                    <input required type="number" min="1" max="10" className="input-field" value={payMonthsCovered} onChange={e => handleMonthsCoveredChange(e.target.value)} />
+                    <small className="text-secondary" style={{ marginTop: '6px', display: 'block', fontSize: '0.8rem' }}>If they skipped a month, set this to 2 to record that this payment covers 2 months.</small>
+                  </div>
+                  <div className="input-group">
+                    <label>Amount Paying Now (LKR)</label>
+                    <input required type="number" step="0.01" max={(Number(payTargetCredit.totalPayment) - Number(payTargetCredit.paidAmount || 0)).toString()} className="input-field" value={payAmount} onChange={e => setPayAmount(e.target.value)} />
+                    <small className="text-secondary" style={{ marginTop: '6px', display: 'block', fontSize: '0.8rem' }}>If customer pays extra, future monthly amounts will automatically recalculate.</small>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '32px', gap: '12px' }}>
+                    <button type="button" onClick={() => setPayModalOpen(false)} className="btn-outline">Cancel</button>
+                    <button type="submit" className="btn-primary" disabled={payLoading}>
+                      {payLoading ? "Processing..." : "Confirm Payment"}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '24px', background: '#F0FDF4', borderRadius: '12px', color: '#166534', border: '1px solid #BBF7D0' }}>
+                  <strong style={{ fontSize: '1.1rem' }}>🎉 This credit plan has been fully completed!</strong>
+                  <p style={{ margin: '8px 0 0 0', color: '#15803D', fontSize: '0.9rem' }}>No further payments are required.</p>
                 </div>
-                <div className="input-group">
-                  <label>Amount Paying Now (LKR)</label>
-                  <input required type="number" step="0.01" max={(Number(payTargetCredit.totalPayment) - Number(payTargetCredit.paidAmount || 0)).toString()} className="input-field" value={payAmount} onChange={e => setPayAmount(e.target.value)} />
-                  <small className="text-secondary" style={{ marginTop: '6px', display: 'block', fontSize: '0.8rem' }}>If customer pays extra, future monthly amounts will automatically recalculate.</small>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {profileModalOpen && profileTargetCredit && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setProfileModalOpen(false); }}>
+          <div className="modal-content" style={{ maxWidth: '600px' }}>
+            <div className="modal-header">
+              <h3>Customer Information</h3>
+              <button className="close-btn" onClick={() => setProfileModalOpen(false)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                <div style={{ background: '#F9FAFB', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Full Name</span>
+                  <div style={{ fontWeight: '600', fontSize: '1.1rem', marginTop: '4px' }}>{profileTargetCredit.firstName} {profileTargetCredit.lastName}</div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '32px', gap: '12px' }}>
-                  <button type="button" onClick={() => setPayModalOpen(false)} className="btn-outline">Cancel</button>
-                  <button type="submit" className="btn-primary" disabled={payLoading}>
-                    {payLoading ? "Processing..." : "Confirm Payment"}
-                  </button>
+                <div style={{ background: '#F9FAFB', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>National ID (NIC)</span>
+                  <div style={{ fontWeight: '600', fontSize: '1.1rem', marginTop: '4px', display: 'flex', alignItems: 'center' }}>
+                    <IdCard size={18} style={{ marginRight: '8px', color: 'var(--primary)' }} /> {profileTargetCredit.nic}
+                  </div>
                 </div>
-              </form>
+              </div>
+
+              <h4 style={{ fontSize: '1rem', marginBottom: '12px', color: 'var(--text-main)', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>Contact Details</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Phone size={18} style={{ marginRight: '12px', color: 'var(--text-secondary)' }} />
+                  <div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Mobile 1</div>
+                    <div style={{ fontWeight: '500' }}>{profileTargetCredit.mobile1}</div>
+                  </div>
+                </div>
+                {profileTargetCredit.mobile2 && (
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Phone size={18} style={{ marginRight: '12px', color: 'var(--text-secondary)' }} />
+                    <div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Mobile 2</div>
+                      <div style={{ fontWeight: '500' }}>{profileTargetCredit.mobile2}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <h4 style={{ fontSize: '1rem', marginBottom: '12px', color: 'var(--text-main)', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>Security Verifications (Cryptographic Hashes)</h4>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>For customer privacy, raw images were destroyed. Only secure SHA-256 cryptographic hashes are retained for verification.</p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ background: '#F9FAFB', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                    <Hash size={16} style={{ marginRight: '8px', color: 'var(--text-secondary)' }} />
+                    <strong style={{ fontSize: '0.9rem' }}>Customer Face Verification</strong>
+                  </div>
+                  <div style={{ fontSize: '0.8rem', fontFamily: 'monospace', wordBreak: 'break-all', color: profileTargetCredit.customerFaceHash ? 'var(--text-main)' : 'var(--text-secondary)' }}>
+                    {profileTargetCredit.customerFaceHash || "Not Provided"}
+                  </div>
+                </div>
+
+                <div style={{ background: '#F9FAFB', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                    <Hash size={16} style={{ marginRight: '8px', color: 'var(--text-secondary)' }} />
+                    <strong style={{ fontSize: '0.9rem' }}>NIC Front Hash</strong>
+                  </div>
+                  <div style={{ fontSize: '0.8rem', fontFamily: 'monospace', wordBreak: 'break-all', color: profileTargetCredit.nicFrontImageHash ? 'var(--text-main)' : 'var(--text-secondary)' }}>
+                    {profileTargetCredit.nicFrontImageHash || "Not Provided"}
+                  </div>
+                </div>
+
+                <div style={{ background: '#F9FAFB', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                    <Hash size={16} style={{ marginRight: '8px', color: 'var(--text-secondary)' }} />
+                    <strong style={{ fontSize: '0.9rem' }}>NIC Rear Hash</strong>
+                  </div>
+                  <div style={{ fontSize: '0.8rem', fontFamily: 'monospace', wordBreak: 'break-all', color: profileTargetCredit.nicRearImageHash ? 'var(--text-main)' : 'var(--text-secondary)' }}>
+                    {profileTargetCredit.nicRearImageHash || "Not Provided"}
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>

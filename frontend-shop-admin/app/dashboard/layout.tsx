@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, PlusCircle, History, LogOut, Package } from "lucide-react";
+import { LayoutDashboard, PlusCircle, History, LogOut, Package, ShoppingCart, BarChart3 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -39,9 +39,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <LayoutDashboard size={18} style={{ marginRight: '10px' }} />
             Dashboard Home
           </Link>
+          <Link href="/dashboard/cashier" className={`nav-item ${pathname === "/dashboard/cashier" ? "active" : ""}`}>
+            <ShoppingCart size={18} style={{ marginRight: '10px' }} />
+            Cashier (Direct Sale)
+          </Link>
           <Link href="/dashboard/manage-stock" className={`nav-item ${pathname === "/dashboard/manage-stock" ? "active" : ""}`}>
             <Package size={18} style={{ marginRight: '10px' }} />
             Manage Stock
+          </Link>
+          <Link href="/dashboard/analytics" className={`nav-item ${pathname === "/dashboard/analytics" ? "active" : ""}`}>
+            <BarChart3 size={18} style={{ marginRight: '10px' }} />
+            Sales & Analytics
           </Link>
           <Link href="/dashboard/add-credit" className={`nav-item ${pathname === "/dashboard/add-credit" ? "active" : ""}`}>
             <PlusCircle size={18} style={{ marginRight: '10px' }} />

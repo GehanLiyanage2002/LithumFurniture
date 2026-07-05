@@ -10,6 +10,10 @@ export class CreateCreditDto {
   lastName: string;
 
   @IsString()
+  @IsOptional()
+  billNo?: string;
+
+  @IsString()
   @IsNotEmpty()
   nic: string;
 
@@ -44,10 +48,26 @@ export class CreateCreditDto {
   monthlyInstallment: number;
 
   @IsOptional()
+  @IsNumber()
+  paidAmount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  paymentsMade?: number;
+
+  @IsOptional()
   @IsString()
   nicFrontImageHash?: string;
 
   @IsOptional()
   @IsString()
   nicRearImageHash?: string;
+
+  @IsOptional()
+  @IsString()
+  customerFaceHash?: string;
+
+  @IsOptional()
+  @IsString()
+  customerFaceImage?: string;
 }

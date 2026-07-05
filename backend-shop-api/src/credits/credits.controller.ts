@@ -16,6 +16,10 @@ export class CreditsController {
     if (createCreditDto.nicRearImageHash) {
       createCreditDto.nicRearImageHash = crypto.createHash('sha256').update(createCreditDto.nicRearImageHash).digest('hex');
     }
+    if (createCreditDto.customerFaceImage) {
+      createCreditDto.customerFaceHash = crypto.createHash('sha256').update(createCreditDto.customerFaceImage).digest('hex');
+      delete createCreditDto.customerFaceImage; // Ensure the raw image isn't saved to DB
+    }
 
     return this.creditsService.create(createCreditDto);
   }

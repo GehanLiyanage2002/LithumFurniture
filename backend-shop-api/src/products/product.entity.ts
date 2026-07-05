@@ -11,6 +11,9 @@ export class Product {
   @Column('decimal', { precision: 12, scale: 2 })
   unitPrice: number;
 
+  @Column('decimal', { precision: 12, scale: 2, default: 0 })
+  costPrice: number;
+
   @Column('int')
   quantity: number;
 

@@ -34,9 +34,17 @@ export class ProductsService {
   }
 
   async decreaseStockByName(productName: string): Promise<void> {
+    return this.decreaseStockByNameQuantity(productName, 1);
+  }
+
+  async decreaseStockByNameQuantity(productName: string, quantity: number): Promise<void> {
     const product = await this.productsRepository.findOne({ where: { productName } });
-    if (product && product.quantity > 0) {
-      product.quantity -= 1;
+    if (product && product.quantity >= quantity) {
+      product.quantity -= quantity;
+      await this.productsRepository.save(product);
+    } else if (product && product.quantity < quantity) {
+      // Just set to 0 if they buy more than what's technically in stock
+      product.quantity = 0;
       await this.productsRepository.save(product);
     }
   }
