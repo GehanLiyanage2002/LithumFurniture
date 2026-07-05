@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { LayoutDashboard, PlusCircle, History, LogOut, Package, ShoppingCart, BarChart3, Truck, Wrench } from "lucide-react";
+import LanguageSwitcher from "../components/LanguageSwitcher";
+import { useTranslations } from "next-intl";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
+  const t = useTranslations('Sidebar');
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
@@ -37,48 +40,51 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <nav className="sidebar-nav">
           <Link href="/dashboard" className={`nav-item ${pathname === "/dashboard" ? "active" : ""}`}>
             <LayoutDashboard size={18} style={{ marginRight: '10px' }} />
-            Dashboard Home
+            {t('dashboard')}
           </Link>
           <Link href="/dashboard/cashier" className={`nav-item ${pathname === "/dashboard/cashier" ? "active" : ""}`}>
             <ShoppingCart size={18} style={{ marginRight: '10px' }} />
-            Cashier (Direct Sale)
+            {t('cashier')}
           </Link>
           <Link href="/dashboard/manage-stock" className={`nav-item ${pathname === "/dashboard/manage-stock" ? "active" : ""}`}>
             <Package size={18} style={{ marginRight: '10px' }} />
-            Shop Stock
+            {t('shop_stock')}
           </Link>
           <Link href="/dashboard/workshop-stock" className={`nav-item ${pathname === "/dashboard/workshop-stock" ? "active" : ""}`}>
             <Wrench size={18} style={{ marginRight: '10px' }} />
-            Workshop Stock
+            {t('workshop_stock')}
           </Link>
           <Link href="/dashboard/manage-suppliers" className={`nav-item ${pathname === "/dashboard/manage-suppliers" ? "active" : ""}`}>
             <Truck size={18} style={{ marginRight: '10px' }} />
-            Suppliers
+            {t('suppliers')}
           </Link>
           <Link href="/dashboard/analytics" className={`nav-item ${pathname === "/dashboard/analytics" ? "active" : ""}`}>
             <BarChart3 size={18} style={{ marginRight: '10px' }} />
-            Sales & Analytics
+            {t('analytics')}
           </Link>
           <Link href="/dashboard/add-credit" className={`nav-item ${pathname === "/dashboard/add-credit" ? "active" : ""}`}>
             <PlusCircle size={18} style={{ marginRight: '10px' }} />
-            Add Credit Record
+            {t('add_credit')}
           </Link>
           <Link href="/dashboard/history" className={`nav-item ${pathname === "/dashboard/history" ? "active" : ""}`}>
             <History size={18} style={{ marginRight: '10px' }} />
-            Credit History
+            {t('credit_history')}
           </Link>
         </nav>
 
         <div className="sidebar-footer">
           <button onClick={handleLogout} className="nav-item" style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
             <LogOut size={18} style={{ marginRight: '10px', color: '#EF4444' }} />
-            <span style={{ color: '#EF4444' }}>Log Out</span>
+            <span style={{ color: '#EF4444' }}>{t('logout')}</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="main-content">
+      <main className="main-content" style={{ position: 'relative' }}>
+        <div style={{ position: 'absolute', top: '24px', right: '32px', zIndex: 50 }}>
+          <LanguageSwitcher />
+        </div>
         {children}
       </main>
     </div>

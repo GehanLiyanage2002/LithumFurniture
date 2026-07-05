@@ -1,0 +1,6 @@
+{
+  "errors": {
+    "USER_NOT_FOUND": "User not found",
+    "INVALID_CREDENTIALS": "Username or password invalid"
+  }
+}

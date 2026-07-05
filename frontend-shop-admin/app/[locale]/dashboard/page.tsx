@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "../../../i18n/routing";
+import { useTranslations } from "next-intl";
 import { 
   PlusCircle, 
   History, 
@@ -11,9 +12,11 @@ import {
   ArrowRight,
   Clock
 } from "lucide-react";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const t = useTranslations('Dashboard');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -29,10 +32,10 @@ export default function DashboardPage() {
       }}>
         <div style={{ position: 'relative', zIndex: 1 }}>
           <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '12px', letterSpacing: '-0.02em' }}>
-            Welcome back to Lithum Dashboard
+            {t('welcome_title')}
           </h1>
           <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '600px', lineHeight: 1.6 }}>
-            Here's what's happening with your store today. Manage credits, track inventory, and monitor your business growth all in one place.
+            {t('welcome_subtitle')}
           </p>
         </div>
         {/* Decorative background element */}
@@ -51,10 +54,10 @@ export default function DashboardPage() {
       {/* Stats Overview */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
         {[
-          { title: "Total Revenue", value: "Rs. 1,250,000", icon: TrendingUp, trend: "+12.5%", trendUp: true },
-          { title: "Active Credits", value: "45", icon: CreditCard, trend: "3 due this week", trendUp: false },
-          { title: "Total Products", value: "320", icon: Package, trend: "+12 new", trendUp: true },
-          { title: "Total Suppliers", value: "24", icon: Users, trend: "Active", trendUp: true }
+          { title: t('total_revenue'), value: "Rs. 1,250,000", icon: TrendingUp, trend: "+12.5%", trendUp: true },
+          { title: t('active_credits'), value: "45", icon: CreditCard, trend: `3 ${t('due_this_week')}`, trendUp: false },
+          { title: t('total_products'), value: "320", icon: Package, trend: `+12 ${t('new')}`, trendUp: true },
+          { title: t('total_suppliers'), value: "24", icon: Users, trend: t('active'), trendUp: true }
         ].map((stat, index) => (
           <div key={index} className="card" style={{ padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
@@ -73,7 +76,7 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem', color: stat.trendUp ? 'var(--success)' : 'var(--warning)' }}>
               <TrendingUp size={16} style={{ transform: stat.trendUp ? 'none' : 'rotate(180deg)' }}/>
               <span style={{ fontWeight: 600 }}>{stat.trend}</span>
-              <span className="text-secondary">vs last month</span>
+              <span className="text-secondary">{t('vs_last_month')}</span>
             </div>
           </div>
         ))}
@@ -84,7 +87,7 @@ export default function DashboardPage() {
         {/* Quick Actions (Primary Focus) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            Core Operations
+            {t('core_operations')}
           </h2>
           
           <div className="card" style={{ position: 'relative', overflow: 'hidden', borderLeft: '4px solid var(--primary)' }}>
@@ -93,12 +96,12 @@ export default function DashboardPage() {
                 <PlusCircle size={32} />
               </div>
               <div style={{ flex: 1 }}>
-                <h3 style={{ fontSize: '1.25rem', margin: '0 0 8px 0', fontWeight: 700 }}>Provide Goods on Credit</h3>
+                <h3 style={{ fontSize: '1.25rem', margin: '0 0 8px 0', fontWeight: 700 }}>{t('provide_goods_credit')}</h3>
                 <p className="text-secondary" style={{ marginBottom: '20px', fontSize: '0.95rem', lineHeight: 1.5 }}>
-                  Create a new credit record for a customer, calculate installments, and log their details.
+                  {t('provide_goods_credit_desc')}
                 </p>
                 <button className="btn-primary" onClick={() => router.push("/dashboard/add-credit")}>
-                  <PlusCircle size={18} /> New Credit Record
+                  <PlusCircle size={18} /> {t('new_credit_record')}
                 </button>
               </div>
             </div>
@@ -110,12 +113,12 @@ export default function DashboardPage() {
                 <History size={32} />
               </div>
               <div style={{ flex: 1 }}>
-                <h3 style={{ fontSize: '1.25rem', margin: '0 0 8px 0', fontWeight: 700 }}>Credit History</h3>
+                <h3 style={{ fontSize: '1.25rem', margin: '0 0 8px 0', fontWeight: 700 }}>{t('credit_history')}</h3>
                 <p className="text-secondary" style={{ marginBottom: '20px', fontSize: '0.95rem', lineHeight: 1.5 }}>
-                  View past credit transactions, manage monthly payments, and calculate early settlements.
+                  {t('credit_history_desc')}
                 </p>
                 <button className="btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }} onClick={() => router.push("/dashboard/history")}>
-                  <History size={18} /> View History
+                  <History size={18} /> {t('view_history')}
                 </button>
               </div>
             </div>
@@ -126,10 +129,10 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              Recent Activity
+              {t('recent_activity')}
             </h2>
             <button style={{ background: 'none', color: 'var(--primary)', fontWeight: 600, fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', border: 'none' }}>
-              View All <ArrowRight size={16} />
+              {t('view_all')} <ArrowRight size={16} />
             </button>
           </div>
           

@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { FileText, Camera, X, Printer, CheckCircle } from "lucide-react";
 import Swal from 'sweetalert2';
 
 export default function AddCreditPage() {
   const router = useRouter();
+  const t = useTranslations('AddCredit');
   
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -248,52 +250,52 @@ export default function AddCreditPage() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Provide Goods on Credit</h1>
+        <h1 className="page-title">{t('title')}</h1>
       </div>
 
       <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
         
         {/* Left Column - Form */}
         <div className="card" style={{ flex: '1 1 600px' }}>
-          <p className="text-secondary" style={{ marginBottom: '24px' }}>Please fill out all required fields marked with <span style={{ color: 'var(--error)' }}>*</span></p>
+          <p className="text-secondary" style={{ marginBottom: '24px' }}>{t('required_fields')} <span style={{ color: 'var(--error)' }}>*</span></p>
           
           <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '24px' }}>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>First Name <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>{t('first_name')} <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="text" className="input-field" value={firstName} onChange={e => setFirstName(e.target.value)} />
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Last Name</label>
+              <label>{t('last_name')}</label>
               <input type="text" className="input-field" value={lastName} onChange={e => setLastName(e.target.value)} />
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>National ID (NIC) <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>{t('nic')} <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="text" className="input-field" value={nic} onChange={e => setNic(e.target.value)} />
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Bill / Invoice No.</label>
+              <label>{t('bill_no')}</label>
               <input type="text" className="input-field" value={billNo} onChange={e => setBillNo(e.target.value)} placeholder="e.g. INV-10024" />
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Mobile Number 1 <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>{t('mobile_1')} <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="tel" className="input-field" placeholder="e.g. 0712345678" value={mobile1} onChange={e => setMobile1(e.target.value)} />
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Mobile Number 2</label>
+              <label>{t('mobile_2')}</label>
               <input type="tel" className="input-field" placeholder="e.g. 0777654321" value={mobile2} onChange={e => setMobile2(e.target.value)} />
             </div>
           </div>
 
           <div className="input-group" style={{ marginBottom: 0 }}>
-            <label>Product Name <span style={{ color: 'var(--error)' }}>*</span></label>
+            <label>{t('product_name')} <span style={{ color: 'var(--error)' }}>*</span></label>
             <input 
               required 
               type="text"
@@ -312,7 +314,7 @@ export default function AddCreditPage() {
                   }
                 }
               }}
-              placeholder="Select or type manually"
+              placeholder={t('select_product')}
             />
             <datalist id="product-list">
               {products.map(p => (
@@ -323,15 +325,15 @@ export default function AddCreditPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Product Price (LKR) <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>{t('product_price')} <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="number" min="0" step="0.01" className="input-field" value={productPrice} onChange={e => setProductPrice(e.target.value)} />
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Down Payment (LKR) <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>{t('down_payment')} <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="number" min="0" step="0.01" className="input-field" value={downPayment} onChange={e => setDownPayment(e.target.value)} />
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Months (1-10) <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>{t('months')} <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="number" min="1" max="10" className="input-field" value={months} onChange={e => setMonths(e.target.value)} />
             </div>
           </div>
@@ -339,7 +341,7 @@ export default function AddCreditPage() {
           {/* Payment Summary moved to right sidebar */}
 
           <div style={{ marginTop: '8px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Verification Images (Security Hashed)</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>{t('verification_images')}</label>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
               
@@ -350,8 +352,8 @@ export default function AddCreditPage() {
               >
                 <input type="file" id="nicFront" accept="image/*" onChange={(e) => handleImageUpload(e, setNicFront)} style={{ display: 'none' }} />
                 <FileText size={28} style={{ marginBottom: '12px', color: nicFront ? 'var(--success)' : 'var(--text-secondary)' }} />
-                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '500' }}>NIC Front</span>
-                {nicFront && <span className="text-success" style={{ marginTop: '8px', fontSize: '0.8rem', fontWeight: 'bold' }}>Uploaded ✔</span>}
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '500' }}>{t('nic_front')}</span>
+                {nicFront && <span className="text-success" style={{ marginTop: '8px', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('uploaded')}</span>}
               </div>
               
               {/* NIC Rear */}
@@ -361,8 +363,8 @@ export default function AddCreditPage() {
               >
                 <input type="file" id="nicRear" accept="image/*" onChange={(e) => handleImageUpload(e, setNicRear)} style={{ display: 'none' }} />
                 <FileText size={28} style={{ marginBottom: '12px', color: nicRear ? 'var(--success)' : 'var(--text-secondary)' }} />
-                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '500' }}>NIC Rear</span>
-                {nicRear && <span className="text-success" style={{ marginTop: '8px', fontSize: '0.8rem', fontWeight: 'bold' }}>Uploaded ✔</span>}
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '500' }}>{t('nic_rear')}</span>
+                {nicRear && <span className="text-success" style={{ marginTop: '8px', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('uploaded')}</span>}
               </div>
 
               {/* Webcam */}
@@ -375,12 +377,12 @@ export default function AddCreditPage() {
                 ) : cameraActive ? (
                   <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between' }}>
                     <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', background: '#000', marginBottom: '8px' }}></video>
-                    <button type="button" onClick={captureFace} className="btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem', width: '100%' }}>Capture</button>
+                    <button type="button" onClick={captureFace} className="btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem', width: '100%' }}>{t('capture')}</button>
                   </div>
                 ) : (
                   <button type="button" onClick={startCamera} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%', justifyContent: 'center' }}>
                     <Camera size={28} style={{ marginBottom: '12px', color: 'var(--text-secondary)' }} />
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '500' }}>Live Camera</span>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '500' }}>{t('live_camera')}</span>
                   </button>
                 )}
                 <canvas ref={canvasRef} width="320" height="240" style={{ display: 'none' }}></canvas>
@@ -392,10 +394,10 @@ export default function AddCreditPage() {
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px', gap: '16px' }}>
             <button type="button" className="btn-outline" onClick={handleReset} disabled={loading} style={{ padding: '16px 32px' }}>
-              Reset Form
+              {t('reset_form')}
             </button>
             <button type="submit" className="btn-primary" disabled={loading} style={{ width: 'auto', padding: '16px 40px' }}>
-              {loading ? "Processing..." : "Submit Credit Record"}
+              {loading ? t('processing') : t('submit_credit')}
             </button>
           </div>
         </form>
@@ -407,39 +409,39 @@ export default function AddCreditPage() {
           {/* Payment Summary */}
           <div className="card" style={{ background: 'var(--primary-light)', border: '1px solid var(--primary)', padding: '24px' }}>
             <h3 style={{ marginBottom: '20px', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.25rem' }}>
-               Payment Summary
+               {t('payment_summary')}
             </h3>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <span style={{ color: '#444', fontWeight: 500 }}>Product Price:</span>
+              <span style={{ color: '#444', fontWeight: 500 }}>{t('product_price')}:</span>
               <strong>LKR {(parseFloat(productPrice) || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <span style={{ color: '#444', fontWeight: 500 }}>Down Payment:</span>
+              <span style={{ color: '#444', fontWeight: 500 }}>{t('down_payment')}:</span>
               <strong>- LKR {(parseFloat(downPayment) || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <span style={{ color: '#444', fontWeight: 500 }}>Interest Rate:</span>
+              <span style={{ color: '#444', fontWeight: 500 }}>{t('interest_rate')}:</span>
               <strong style={{ color: 'var(--warning)' }}>{interestRate}%</strong>
             </div>
             <div style={{ borderTop: '1px dashed rgba(139, 90, 43, 0.3)', margin: '16px 0' }}></div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <span style={{ color: '#444', fontWeight: 500 }}>Total Payable:</span>
+              <span style={{ color: '#444', fontWeight: 500 }}>{t('total_payable')}:</span>
               <strong style={{ color: 'var(--primary)', fontSize: '1.1rem' }}>LKR {calculateTotal().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', background: 'white', padding: '16px', borderRadius: '8px', marginTop: '16px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-              <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>Monthly Installment:</span>
+              <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{t('monthly_installment')}:</span>
               <strong style={{ color: 'var(--success)', fontSize: '1.25rem' }}>LKR {calculateMonthly().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
             </div>
           </div>
 
           {/* Credit Guidelines */}
           <div className="card" style={{ padding: '24px' }}>
-             <h4 style={{ marginBottom: '16px', color: 'var(--text-main)', fontSize: '1.1rem' }}>Credit Guidelines</h4>
+             <h4 style={{ marginBottom: '16px', color: 'var(--text-main)', fontSize: '1.1rem' }}>{t('credit_guidelines')}</h4>
              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-               <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }}/> Ensure NIC images are clear and readable.</li>
-               <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }}/> Customer must be physically present for the photo.</li>
-               <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }}/> Minimum down payment is usually 20% of product price.</li>
-               <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }}/> Double-check the primary mobile number for SMS alerts.</li>
+               <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }}/> {t('guide_1')}</li>
+               <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }}/> {t('guide_2')}</li>
+               <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }}/> {t('guide_3')}</li>
+               <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }}/> {t('guide_4')}</li>
              </ul>
           </div>
         </div>
@@ -522,9 +524,9 @@ export default function AddCreditPage() {
             </div>
 
             <div style={{ padding: '16px', background: '#F9FAFB', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', gap: '16px', borderRadius: '0 0 12px 12px' }}>
-              <button className="btn-outline" onClick={closeReceipt}>Close & View History</button>
+              <button className="btn-outline" onClick={closeReceipt}>{t('close_view_history')}</button>
               <button className="btn-primary" onClick={printReceipt} style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Printer size={18} style={{ marginRight: '8px' }} /> Print Agreement
+                <Printer size={18} style={{ marginRight: '8px' }} /> {t('print_agreement')}
               </button>
             </div>
           </div>

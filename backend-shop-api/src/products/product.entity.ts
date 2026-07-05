@@ -8,6 +8,9 @@ export class Product {
   @Column()
   productName: string;
 
+  @Column({ nullable: true })
+  productNameSi: string;
+
   @Column('decimal', { precision: 12, scale: 2 })
   unitPrice: number;
 
@@ -19,6 +22,9 @@ export class Product {
 
   @Column({ default: 'RAW' }) // RAW means shop-made furniture, SUPPLIER means bought from distributor
   category: string;
+
+  @Column({ nullable: true })
+  categorySi: string;
 
   @Column({ nullable: true })
   supplierName: string;

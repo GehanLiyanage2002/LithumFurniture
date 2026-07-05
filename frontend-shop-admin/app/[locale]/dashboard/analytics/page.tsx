@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { TrendingUp, Calendar, DollarSign, Package, BarChart3 } from "lucide-react";
 
 interface CashSale {
@@ -33,6 +34,7 @@ interface Credit {
 
 export default function AnalyticsPage() {
   const router = useRouter();
+  const t = useTranslations('Analytics');
   
   const [sales, setSales] = useState<CashSale[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -117,84 +119,84 @@ export default function AnalyticsPage() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Financial Dashboard & Analytics</h1>
+        <h1 className="page-title">{t('title')}</h1>
       </div>
 
       {loading ? (
-        <p>Loading analytics...</p>
+        <p>{t('loading_analytics')}</p>
       ) : (
         <>
-          <h3 style={{ fontSize: '1.25rem', marginBottom: '16px', color: 'var(--text-main)' }}>Overall Financial Summary</h3>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '16px', color: 'var(--text-main)' }}>{t('overall_summary')}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px', marginBottom: '32px' }}>
             
             <div className="card" style={{ padding: '24px', borderLeft: '4px solid var(--primary)', background: 'linear-gradient(to right, #ffffff, #f3f4f6)' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                 <TrendingUp size={20} style={{ color: 'var(--primary)', marginRight: '8px' }} />
-                <h4 style={{ color: 'var(--primary)', fontSize: '0.9rem', margin: 0, textTransform: 'uppercase' }}>Total Global Earnings</h4>
+                <h4 style={{ color: 'var(--primary)', fontSize: '0.9rem', margin: 0, textTransform: 'uppercase' }}>{t('global_earnings')}</h4>
               </div>
               <p style={{ fontSize: '1.8rem', fontWeight: '700', color: 'var(--primary)' }}>LKR {totalOverallEarnings.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '8px' }}>POS + Credit Collected</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '8px' }}>{t('pos_credit_collected')}</div>
             </div>
 
             <div className="card" style={{ padding: '24px', borderLeft: '4px solid var(--error)', background: 'linear-gradient(to right, #ffffff, #fef2f2)' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                 <Calendar size={20} style={{ color: 'var(--error)', marginRight: '8px' }} />
-                <h4 style={{ color: 'var(--error)', fontSize: '0.9rem', margin: 0, textTransform: 'uppercase' }}>Customer Payables</h4>
+                <h4 style={{ color: 'var(--error)', fontSize: '0.9rem', margin: 0, textTransform: 'uppercase' }}>{t('customer_payables')}</h4>
               </div>
               <p style={{ fontSize: '1.8rem', fontWeight: '700', color: 'var(--error)' }}>LKR {totalReceivables.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '8px' }}>Pending Credit Installments</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '8px' }}>{t('pending_installments')}</div>
             </div>
 
             <div className="card" style={{ padding: '24px', borderLeft: '4px solid var(--success)', background: 'linear-gradient(to right, #ffffff, #f0fdf4)' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                 <DollarSign size={20} style={{ color: 'var(--success)', marginRight: '8px' }} />
-                <h4 style={{ color: 'var(--success)', fontSize: '0.9rem', margin: 0, textTransform: 'uppercase' }}>POS Net Profit</h4>
+                <h4 style={{ color: 'var(--success)', fontSize: '0.9rem', margin: 0, textTransform: 'uppercase' }}>{t('pos_net_profit')}</h4>
               </div>
               <p style={{ fontSize: '1.8rem', fontWeight: '700', color: 'var(--success)' }}>LKR {totalPosProfit.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '8px' }}>From Cash Sales Only</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '8px' }}>{t('from_cash_sales')}</div>
             </div>
 
             <div className="card" style={{ padding: '24px', borderLeft: '4px solid var(--warning)' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                 <Package size={20} style={{ color: 'var(--warning)', marginRight: '8px' }} />
-                <h4 style={{ color: 'var(--warning)', fontSize: '0.9rem', margin: 0, textTransform: 'uppercase' }}>Available Stock</h4>
+                <h4 style={{ color: 'var(--warning)', fontSize: '0.9rem', margin: 0, textTransform: 'uppercase' }}>{t('available_stock')}</h4>
               </div>
               <p style={{ fontSize: '1.8rem', fontWeight: '700', color: 'var(--text-main)' }}>{totalStockItems}</p>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '8px' }}>Total Items in Inventory</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '8px' }}>{t('items_inventory')}</div>
             </div>
 
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
             <div className="card" style={{ padding: '24px', border: '1px solid var(--border)', background: '#F9FAFB' }}>
-              <h4 style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>Cash Sales (POS) Revenue</h4>
+              <h4 style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>{t('cash_sales_revenue')}</h4>
               <p style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--text-main)' }}>LKR {totalPosSales.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
-              <span className="badge badge-success">Fully Paid</span>
+              <span className="badge badge-success">{t('fully_paid')}</span>
             </div>
             <div className="card" style={{ padding: '24px', border: '1px solid var(--border)', background: '#F9FAFB' }}>
-              <h4 style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>Credit Sales Revenue (Collected)</h4>
+              <h4 style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>{t('credit_sales_revenue')}</h4>
               <p style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--text-main)' }}>LKR {totalCreditEarnings.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
-              <span className="badge badge-primary">Downpayments + Installments</span>
+              <span className="badge badge-primary">{t('downpayments_installments')}</span>
             </div>
           </div>
 
           <div className="card">
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '20px', color: 'var(--primary)' }}>POS Transaction History</h3>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '20px', color: 'var(--primary)' }}>{t('pos_transaction_history')}</h3>
             
             {sales.length === 0 ? (
-              <p className="text-secondary">No cash sales recorded yet.</p>
+              <p className="text-secondary">{t('no_cash_sales')}</p>
             ) : (
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-                      <th style={{ padding: '12px 16px' }}>Date</th>
-                      <th style={{ padding: '12px 16px' }}>Product</th>
-                      <th style={{ padding: '12px 16px' }}>Qty</th>
-                      <th style={{ padding: '12px 16px' }}>Unit Price</th>
-                      <th style={{ padding: '12px 16px' }}>Discount</th>
-                      <th style={{ padding: '12px 16px' }}>Total Paid</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'right' }}>Profit</th>
+                      <th style={{ padding: '12px 16px' }}>{t('table_date')}</th>
+                      <th style={{ padding: '12px 16px' }}>{t('table_product')}</th>
+                      <th style={{ padding: '12px 16px' }}>{t('table_qty')}</th>
+                      <th style={{ padding: '12px 16px' }}>{t('table_unit_price')}</th>
+                      <th style={{ padding: '12px 16px' }}>{t('table_discount')}</th>
+                      <th style={{ padding: '12px 16px' }}>{t('table_total_paid')}</th>
+                      <th style={{ padding: '12px 16px', textAlign: 'right' }}>{t('table_profit')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -229,7 +231,7 @@ export default function AnalyticsPage() {
             {totalPages > 1 && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderTop: '1px solid var(--border)', background: '#F9FAFB', marginTop: '16px', borderRadius: '0 0 12px 12px' }}>
                 <span className="text-secondary" style={{ fontSize: '0.9rem' }}>
-                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, sales.length)} of {sales.length} transactions
+                  {t('showing')} {((currentPage - 1) * itemsPerPage) + 1} {t('to')} {Math.min(currentPage * itemsPerPage, sales.length)} {t('of')} {sales.length} {t('transactions')}
                 </span>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button 
@@ -238,7 +240,7 @@ export default function AnalyticsPage() {
                     className="btn-outline" 
                     style={{ padding: '8px 16px' }}
                   >
-                    Previous
+                    {t('previous')}
                   </button>
                   <button 
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
@@ -246,7 +248,7 @@ export default function AnalyticsPage() {
                     className="btn-outline" 
                     style={{ padding: '8px 16px' }}
                   >
-                    Next
+                    {t('next_btn')}
                   </button>
                 </div>
               </div>

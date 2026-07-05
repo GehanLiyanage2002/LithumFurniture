@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Wrench, PlusCircle, Trash2, ArrowRight, History as HistoryIcon, Download } from "lucide-react";
 import Swal from 'sweetalert2';
 
@@ -27,6 +28,7 @@ interface WorkshopStockSummary {
 
 export default function WorkshopStockPage() {
   const router = useRouter();
+  const t = useTranslations('WorkshopStock');
   
   const [stocks, setStocks] = useState<WorkshopStock[]>([]);
   const [history, setHistory] = useState<WorkshopStockHistory[]>([]);
@@ -221,24 +223,24 @@ export default function WorkshopStockPage() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Workshop Stock</h1>
+        <h1 className="page-title">{t('title')}</h1>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '24px' }}>
         <div className="card" style={{ padding: '24px' }}>
-          <h4 className="text-secondary" style={{ fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Workshop Unique Products</h4>
+          <h4 className="text-secondary" style={{ fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('workshop_unique_products')}</h4>
           <p style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--primary)' }}>{totalProductTypes}</p>
         </div>
         <div className="card" style={{ padding: '24px' }}>
-          <h4 className="text-secondary" style={{ fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current Workshop Stock</h4>
+          <h4 className="text-secondary" style={{ fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('current_workshop_stock')}</h4>
           <p style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--primary)' }}>{totalItemsInStock}</p>
         </div>
         <div className="card" style={{ padding: '24px' }}>
-          <h4 className="text-secondary" style={{ fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total History Added</h4>
+          <h4 className="text-secondary" style={{ fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('total_history_added')}</h4>
           <p style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--success)' }}>{summary.totalAdded}</p>
         </div>
         <div className="card" style={{ padding: '24px' }}>
-          <h4 className="text-secondary" style={{ fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total History Transferred</h4>
+          <h4 className="text-secondary" style={{ fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('total_history_transferred')}</h4>
           <p style={{ fontSize: '2rem', fontWeight: '700', color: '#F59E0B' }}>{summary.totalTransferred}</p>
         </div>
       </div>
@@ -249,23 +251,23 @@ export default function WorkshopStockPage() {
         <div className="card" style={{ alignSelf: 'start' }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', color: 'var(--primary)' }}>
             <PlusCircle size={24} style={{ marginRight: '12px' }} />
-            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Add Workshop Stock</h3>
+            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>{t('add_workshop_stock')}</h3>
           </div>
           
           <form onSubmit={handleAddStock}>
             <div className="input-group">
-              <label>Product Name <span style={{ color: 'var(--error)' }}>*</span></label>
-              <input required type="text" className="input-field" value={productName} onChange={e => setProductName(e.target.value)} placeholder="e.g. Teak Wood Chair" />
+              <label>{t('product_name')} <span style={{ color: 'var(--error)' }}>*</span></label>
+              <input required type="text" className="input-field" value={productName} onChange={e => setProductName(e.target.value)} placeholder={t('product_name_placeholder')} />
             </div>
             <div className="input-group">
-              <label>Quantity <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>{t('quantity')} <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="number" min="1" className="input-field" value={quantity} onChange={e => setQuantity(e.target.value)} />
             </div>
 
             {message && <p className={message.includes("success") ? "text-success mb-4" : "text-error mb-4"} style={{ fontSize: '0.9rem', fontWeight: '500' }}>{message}</p>}
 
             <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={addLoading}>
-              <PlusCircle size={16} /> {addLoading ? "Adding..." : "Add to Workshop"}
+              <PlusCircle size={16} /> {addLoading ? t('adding') : t('add_to_workshop')}
             </button>
           </form>
         </div>
@@ -277,32 +279,32 @@ export default function WorkshopStockPage() {
               onClick={() => { setActiveTab("current"); setCurrentPage(1); }}
               style={{ background: 'none', border: 'none', fontSize: '1.1rem', fontWeight: '600', color: activeTab === "current" ? 'var(--primary)' : 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <Wrench size={20} /> Current Stock
+              <Wrench size={20} /> {t('tab_current_stock')}
             </button>
             <button 
               onClick={() => { setActiveTab("history"); setCurrentPage(1); }}
               style={{ background: 'none', border: 'none', fontSize: '1.1rem', fontWeight: '600', color: activeTab === "history" ? 'var(--primary)' : 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <HistoryIcon size={20} /> History Log
+              <HistoryIcon size={20} /> {t('tab_history_log')}
             </button>
           </div>
 
           {loading ? (
-            <p>Loading data...</p>
+            <p>{t('loading_data')}</p>
           ) : error ? (
             <p className="text-error">{error}</p>
           ) : activeTab === "current" ? (
             // CURRENT STOCK VIEW
             stocks.length === 0 ? (
-              <p className="text-secondary">No products in workshop stock.</p>
+              <p className="text-secondary">{t('no_products_workshop')}</p>
             ) : (
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-                    <th style={{ padding: '12px 16px' }}>Product Name</th>
-                    <th style={{ padding: '12px 16px' }}>Quantity</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
+                    <th style={{ padding: '12px 16px' }}>{t('table_product_name')}</th>
+                    <th style={{ padding: '12px 16px' }}>{t('table_quantity')}</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'right' }}>{t('table_actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -311,7 +313,7 @@ export default function WorkshopStockPage() {
                       <td style={{ padding: '16px', fontWeight: '600' }}>{stock.productName}</td>
                       <td style={{ padding: '16px' }}>
                         <span className={`badge ${stock.quantity > 5 ? 'badge-success' : 'badge-primary'}`} style={{ background: stock.quantity <= 5 ? 'rgba(220, 38, 38, 0.1)' : undefined, color: stock.quantity <= 5 ? 'var(--error)' : undefined }}>
-                          {stock.quantity} in workshop
+                          {stock.quantity} {t('in_workshop')}
                         </span>
                       </td>
                       <td style={{ padding: '16px', textAlign: 'right' }}>
@@ -323,7 +325,7 @@ export default function WorkshopStockPage() {
                             title="Transfer to Shop Stock"
                             disabled={stock.quantity < 1}
                           >
-                            <ArrowRight size={14} style={{ marginRight: '6px' }} /> Transfer to Shop
+                            <ArrowRight size={14} style={{ marginRight: '6px' }} /> {t('transfer_btn')}
                           </button>
                           <button 
                             onClick={() => handleDelete(stock.id)}
@@ -346,7 +348,7 @@ export default function WorkshopStockPage() {
           {activeTab === "current" && stocks.length > 0 && totalPages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderTop: '1px solid var(--border)', background: '#F9FAFB', marginTop: '16px', borderRadius: '0 0 12px 12px' }}>
               <span className="text-secondary" style={{ fontSize: '0.9rem' }}>
-                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, stocks.length)} of {stocks.length} products
+                {t('showing')} {((currentPage - 1) * itemsPerPage) + 1} {t('to')} {Math.min(currentPage * itemsPerPage, stocks.length)} {t('of')} {stocks.length} {t('products')}
               </span>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button 
@@ -355,7 +357,7 @@ export default function WorkshopStockPage() {
                   className="btn-outline" 
                   style={{ padding: '8px 16px' }}
                 >
-                  Previous
+                  {t('previous')}
                 </button>
                 <button 
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
@@ -363,7 +365,7 @@ export default function WorkshopStockPage() {
                   className="btn-outline" 
                   style={{ padding: '8px 16px' }}
                 >
-                  Next
+                  {t('next_btn')}
                 </button>
               </div>
             </div>
@@ -372,22 +374,22 @@ export default function WorkshopStockPage() {
           {/* HISTORY LOG VIEW */}
           {activeTab === "history" && (
             history.length === 0 ? (
-              <p className="text-secondary">No history logs found.</p>
+              <p className="text-secondary">{t('no_history')}</p>
             ) : (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
                   <button onClick={exportToCSV} className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', color: 'var(--primary)', borderColor: 'var(--primary)' }}>
-                    <Download size={16} /> Export to CSV
+                    <Download size={16} /> {t('export_csv')}
                   </button>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-                      <th style={{ padding: '12px 16px' }}>Date</th>
-                      <th style={{ padding: '12px 16px' }}>Action</th>
-                      <th style={{ padding: '12px 16px' }}>Product Name</th>
-                      <th style={{ padding: '12px 16px' }}>Quantity</th>
+                      <th style={{ padding: '12px 16px' }}>{t('table_date')}</th>
+                      <th style={{ padding: '12px 16px' }}>{t('table_action')}</th>
+                      <th style={{ padding: '12px 16px' }}>{t('table_product_name')}</th>
+                      <th style={{ padding: '12px 16px' }}>{t('table_quantity')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -418,7 +420,7 @@ export default function WorkshopStockPage() {
           {activeTab === "history" && history.length > 0 && totalHistoryPages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderTop: '1px solid var(--border)', background: '#F9FAFB', marginTop: '16px', borderRadius: '0 0 12px 12px' }}>
               <span className="text-secondary" style={{ fontSize: '0.9rem' }}>
-                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, history.length)} of {history.length} records
+                {t('showing')} {((currentPage - 1) * itemsPerPage) + 1} {t('to')} {Math.min(currentPage * itemsPerPage, history.length)} {t('of')} {history.length} {t('records')}
               </span>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button 
@@ -427,7 +429,7 @@ export default function WorkshopStockPage() {
                   className="btn-outline" 
                   style={{ padding: '8px 16px' }}
                 >
-                  Previous
+                  {t('previous')}
                 </button>
                 <button 
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalHistoryPages))} 
@@ -435,7 +437,7 @@ export default function WorkshopStockPage() {
                   className="btn-outline" 
                   style={{ padding: '8px 16px' }}
                 >
-                  Next
+                  {t('next_btn')}
                 </button>
               </div>
             </div>
@@ -449,30 +451,30 @@ export default function WorkshopStockPage() {
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setTransferModalOpen(false); }}>
           <div className="modal-content" style={{ maxWidth: '400px' }}>
             <div className="modal-header">
-              <h3>Transfer to Shop Stock</h3>
+              <h3>{t('transfer_modal_title')}</h3>
               <button className="close-btn" onClick={() => setTransferModalOpen(false)}>&times;</button>
             </div>
             <div className="modal-body">
               <div style={{ background: '#F9FAFB', padding: '16px', borderRadius: '8px', marginBottom: '24px', border: '1px solid var(--border)' }}>
                 <strong style={{ fontSize: '1.1rem', color: 'var(--primary)', display: 'block', marginBottom: '8px' }}>{transferTargetStock.productName}</strong>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                  <span className="text-secondary">Available in Workshop:</span>
+                  <span className="text-secondary">{t('available_workshop')}</span>
                   <strong className={transferTargetStock.quantity <= 5 ? 'text-error' : ''}>{transferTargetStock.quantity}</strong>
                 </div>
               </div>
               <form onSubmit={handleTransfer}>
                 <div className="input-group">
-                  <label>Quantity to Transfer <span style={{ color: 'var(--error)' }}>*</span></label>
+                  <label>{t('quantity_to_transfer')} <span style={{ color: 'var(--error)' }}>*</span></label>
                   <input required type="number" min="1" max={transferTargetStock.quantity} className="input-field" value={transferQuantity} onChange={e => setTransferQuantity(e.target.value)} />
                 </div>
                 <div className="input-group">
-                  <label>Unit Price (Selling Price) <span style={{ color: 'var(--error)' }}>*</span></label>
+                  <label>{t('unit_price_selling')} <span style={{ color: 'var(--error)' }}>*</span></label>
                   <input required type="number" min="0" step="0.01" className="input-field" value={transferUnitPrice} onChange={e => setTransferUnitPrice(e.target.value)} placeholder="0.00" />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px', gap: '12px' }}>
-                  <button type="button" onClick={() => setTransferModalOpen(false)} className="btn-outline">Cancel</button>
+                  <button type="button" onClick={() => setTransferModalOpen(false)} className="btn-outline">{t('cancel')}</button>
                   <button type="submit" className="btn-primary" disabled={transferLoading} style={{ background: 'var(--primary)', border: 'none' }}>
-                    {transferLoading ? "Transferring..." : "Confirm Transfer"}
+                    {transferLoading ? t('transferring') : t('confirm_transfer')}
                   </button>
                 </div>
               </form>

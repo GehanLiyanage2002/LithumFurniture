@@ -8,6 +8,9 @@ export class Supplier {
   @Column({ unique: true })
   companyName: string;
 
+  @Column({ nullable: true })
+  companyNameSi: string;
+
   @CreateDateColumn()
   createdAt: Date;
 }

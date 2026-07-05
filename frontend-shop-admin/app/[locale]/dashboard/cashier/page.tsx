@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ShoppingCart, RefreshCcw, CheckCircle, Printer } from "lucide-react";
 import Swal from 'sweetalert2';
 
@@ -14,6 +15,7 @@ interface Product {
 
 export default function CashierPage() {
   const router = useRouter();
+  const t = useTranslations('Cashier');
   
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
@@ -200,7 +202,7 @@ export default function CashierPage() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Cashier Checkout</h1>
+        <h1 className="page-title">{t('checkout')}</h1>
       </div>
 
       <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
@@ -209,12 +211,12 @@ export default function CashierPage() {
         <div className="card" style={{ flex: '1 1 600px' }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', color: 'var(--primary)' }}>
             <ShoppingCart size={24} style={{ marginRight: '12px' }} />
-            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Direct Cash Sale</h3>
+            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>{t('direct_sale')}</h3>
           </div>
 
         <form onSubmit={handleCheckout}>
           <div className="input-group">
-            <label>Product Name <span style={{ color: 'var(--error)' }}>*</span></label>
+            <label>{t('product_name')} <span style={{ color: 'var(--error)' }}>*</span></label>
             <input 
               required 
               type="text"
@@ -233,7 +235,7 @@ export default function CashierPage() {
                   }
                 }
               }}
-              placeholder="Select from stock or type manually"
+              placeholder={t('select_product')}
             />
             <datalist id="stock-products">
               {products.map(p => (
@@ -244,26 +246,26 @@ export default function CashierPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div className="input-group">
-              <label>Unit Price (LKR) <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>{t('unit_price')} <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="number" min="0" step="0.01" className="input-field" value={unitPrice} onChange={e => setUnitPrice(e.target.value)} />
             </div>
             <div className="input-group">
-              <label>Quantity <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>{t('quantity')} <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="number" min="1" className="input-field" value={quantity} onChange={e => setQuantity(e.target.value)} />
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', background: '#F9FAFB', padding: '16px', borderRadius: '12px', border: '1px dashed var(--border)', marginBottom: '24px' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Discount Type</label>
+              <label>{t('discount_type')}</label>
               <select className="input-field" value={discountType} onChange={e => { setDiscountType(e.target.value); setDiscountValue(""); }}>
-                <option value="NONE">No Discount</option>
-                <option value="FIXED">Fixed Amount (LKR)</option>
-                <option value="PERCENTAGE">Percentage (%)</option>
+                <option value="NONE">{t('no_discount')}</option>
+                <option value="FIXED">{t('fixed_amount')}</option>
+                <option value="PERCENTAGE">{t('percentage')}</option>
               </select>
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Discount Value {discountType === 'NONE' ? '' : (discountType === 'FIXED' ? '(LKR)' : '(%)')}</label>
+              <label>{t('discount_value')} {discountType === 'NONE' ? '' : (discountType === 'FIXED' ? '(LKR)' : '(%)')}</label>
               <input 
                 type="number" 
                 min="0" 
@@ -283,10 +285,10 @@ export default function CashierPage() {
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px' }}>
             <button type="button" className="btn-outline" onClick={handleReset} disabled={loading} style={{ padding: '16px 32px' }}>
-              <RefreshCcw size={18} style={{ marginRight: '8px' }} /> Reset
+              <RefreshCcw size={18} style={{ marginRight: '8px' }} /> {t('reset')}
             </button>
             <button type="submit" className="btn-primary" disabled={loading} style={{ width: 'auto', padding: '16px 40px' }}>
-              <CheckCircle size={18} style={{ marginRight: '8px' }} /> {loading ? "Processing..." : "Checkout"}
+              <CheckCircle size={18} style={{ marginRight: '8px' }} /> {loading ? t('processing') : t('checkout_btn')}
             </button>
           </div>
         </form>
@@ -298,32 +300,32 @@ export default function CashierPage() {
         {/* Transaction Summary moved here */}
         <div className="card" style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', padding: '24px' }}>
             <h4 style={{ marginBottom: '20px', color: 'var(--text-main)', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-               <ShoppingCart size={20} /> Transaction Summary
+               <ShoppingCart size={20} /> {t('summary')}
             </h4>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <span className="text-secondary">Subtotal ({(quantity || "1")}x):</span>
+              <span className="text-secondary">{t('subtotal')} ({(quantity || "1")}x):</span>
               <strong>LKR {((parseFloat(unitPrice) || 0) * (parseInt(quantity, 10) || 1)).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
             </div>
             {discountType !== 'NONE' && (
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', color: 'var(--success)' }}>
-                <span>Discount Applied:</span>
+                <span>{t('discount_applied')}:</span>
                 <strong>- LKR {calculateDiscountAmount().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
               </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-              <span className="text-secondary" style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Total Payable:</span>
+              <span className="text-secondary" style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{t('total_payable')}:</span>
               <strong style={{ color: 'var(--primary)', fontSize: '1.5rem' }}>LKR {calculateTotal().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
             </div>
         </div>
 
         {/* Quick Help / Cashier Info */}
         <div className="card" style={{ padding: '24px' }}>
-           <h4 style={{ marginBottom: '16px', color: 'var(--text-main)', fontSize: '1.1rem' }}>Cashier Guidelines</h4>
+           <h4 style={{ marginBottom: '16px', color: 'var(--text-main)', fontSize: '1.1rem' }}>{t('guidelines')}</h4>
            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-             <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }}/> Verify product condition before checkout.</li>
-             <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }}/> Provide the printed receipt to the customer.</li>
-             <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }}/> Items can be exchanged within 7 days.</li>
-             <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }}/> For discounts above 15%, manager approval is needed.</li>
+             <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }}/> {t('guide_1')}</li>
+             <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }}/> {t('guide_2')}</li>
+             <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }}/> {t('guide_3')}</li>
+             <li style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}><CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }}/> {t('guide_4')}</li>
            </ul>
         </div>
         
@@ -387,9 +389,9 @@ export default function CashierPage() {
             </div>
 
             <div style={{ padding: '16px', background: '#F9FAFB', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', gap: '16px', borderRadius: '0 0 12px 12px' }}>
-              <button className="btn-outline" onClick={closeReceipt}>Close</button>
+              <button className="btn-outline" onClick={closeReceipt}>{t('close')}</button>
               <button className="btn-primary" onClick={printReceipt} style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Printer size={18} style={{ marginRight: '8px' }} /> Print Receipt
+                <Printer size={18} style={{ marginRight: '8px' }} /> {t('print')}
               </button>
             </div>
           </div>
