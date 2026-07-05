@@ -1,0 +1,69 @@
+import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+
+export class CreateCreditDto {
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @IsString()
+  @IsOptional()
+  billNo?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  nic: string;
+
+  @IsString()
+  @IsNotEmpty()
+  mobile1: string;
+
+  @IsString()
+  @IsNotEmpty()
+  mobile2: string;
+
+  @IsString()
+  @IsNotEmpty()
+  productName: string;
+
+  @IsNumber()
+  productPrice: number;
+
+  @IsNumber()
+  downPayment: number;
+
+  @IsNumber()
+  interestRate: number;
+
+  @IsNumber()
+  months: number;
+
+  @IsNumber()
+  totalPayment: number;
+
+  @IsNumber()
+  monthlyInstallment: number;
+
+  @IsOptional()
+  @IsNumber()
+  paidAmount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  paymentsMade?: number;
+
+  @IsOptional()
+  @IsString()
+  nicFrontImage?: string;
+
+  @IsOptional()
+  @IsString()
+  nicRearImage?: string;
+
+  @IsOptional()
+  @IsString()
+  customerFaceImage?: string;
+}
