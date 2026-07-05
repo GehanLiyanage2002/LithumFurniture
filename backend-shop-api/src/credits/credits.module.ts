@@ -5,8 +5,10 @@ import { CreditsService } from './credits.service';
 import { Credit } from './credit.entity';
 import { Payment } from './payment.entity';
 
+import { ProductsModule } from '../products/products.module';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([Credit, Payment])],
+  imports: [TypeOrmModule.forFeature([Credit, Payment]), ProductsModule],
   controllers: [CreditsController],
   providers: [CreditsService],
 })

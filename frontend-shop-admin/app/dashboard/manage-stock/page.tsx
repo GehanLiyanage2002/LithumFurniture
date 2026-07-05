@@ -1,0 +1,218 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Package, PlusCircle, Trash2 } from "lucide-react";
+
+interface Product {
+  id: string;
+  productName: string;
+  unitPrice: number;
+  quantity: number;
+  category: string;
+}
+
+export default function ManageStockPage() {
+  const router = useRouter();
+  
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [productName, setProductName] = useState("");
+  const [unitPrice, setUnitPrice] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const [addLoading, setAddLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const fetchProducts = async () => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const res = await fetch("http://localhost:4000/products", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to fetch stock");
+      const data = await res.json();
+      setProducts(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("admin_token");
+    if (!token) {
+      router.push("/");
+      return;
+    }
+    fetchProducts();
+  }, [router]);
+
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddLoading(true);
+    setMessage("");
+
+    const token = localStorage.getItem("admin_token");
+    
+    try {
+      const res = await fetch("http://localhost:4000/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          productName,
+          unitPrice: parseFloat(unitPrice) || 0,
+          quantity: parseInt(quantity, 10) || 0,
+          category: 'RAW'
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to add product");
+
+      setMessage("Product added successfully!");
+      setProductName("");
+      setUnitPrice("");
+      setQuantity("1");
+      
+      fetchProducts(); // Refresh list
+    } catch (err: any) {
+      setMessage(err.message);
+    } finally {
+      setAddLoading(false);
+      setTimeout(() => setMessage(""), 3000);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+    
+    const token = localStorage.getItem("admin_token");
+    try {
+      const res = await fetch(`http://localhost:4000/products/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to delete product");
+      fetchProducts();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  // Calculate Summary Metrics
+  const totalProductTypes = products.length;
+  const totalItemsInStock = products.reduce((acc, p) => acc + Number(p.quantity), 0);
+  const totalStockValue = products.reduce((acc, p) => acc + (Number(p.unitPrice) * Number(p.quantity)), 0);
+
+  return (
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Manage Stock</h1>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '24px' }}>
+        <div className="card" style={{ padding: '24px' }}>
+          <h4 className="text-secondary" style={{ fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Unique Products</h4>
+          <p style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--primary)' }}>{totalProductTypes}</p>
+        </div>
+        <div className="card" style={{ padding: '24px' }}>
+          <h4 className="text-secondary" style={{ fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Items in Stock</h4>
+          <p style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--primary)' }}>{totalItemsInStock}</p>
+        </div>
+        <div className="card" style={{ padding: '24px' }}>
+          <h4 className="text-secondary" style={{ fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Stock Value</h4>
+          <p style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--success)' }}>LKR {totalStockValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px' }}>
+        
+        {/* Add Product Form */}
+        <div className="card" style={{ alignSelf: 'start' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', color: 'var(--primary)' }}>
+            <PlusCircle size={24} style={{ marginRight: '12px' }} />
+            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Add Raw Furniture</h3>
+          </div>
+          
+          <form onSubmit={handleAddProduct}>
+            <div className="input-group">
+              <label>Product Name <span style={{ color: 'var(--error)' }}>*</span></label>
+              <input required type="text" className="input-field" value={productName} onChange={e => setProductName(e.target.value)} placeholder="e.g. Teak Wood Sofa" />
+            </div>
+            <div className="input-group">
+              <label>Unit Price (LKR) <span style={{ color: 'var(--error)' }}>*</span></label>
+              <input required type="number" min="0" step="0.01" className="input-field" value={unitPrice} onChange={e => setUnitPrice(e.target.value)} />
+            </div>
+            <div className="input-group">
+              <label>Initial Quantity <span style={{ color: 'var(--error)' }}>*</span></label>
+              <input required type="number" min="1" className="input-field" value={quantity} onChange={e => setQuantity(e.target.value)} />
+            </div>
+
+            {message && <p className={message.includes("success") ? "text-success mb-4" : "text-error mb-4"} style={{ fontSize: '0.9rem', fontWeight: '500' }}>{message}</p>}
+
+            <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={addLoading}>
+              <PlusCircle size={16} /> {addLoading ? "Adding..." : "Add to Stock"}
+            </button>
+          </form>
+        </div>
+
+        {/* Product List */}
+        <div className="card">
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', color: 'var(--primary)' }}>
+            <Package size={24} style={{ marginRight: '12px' }} />
+            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Current Stock</h3>
+          </div>
+
+          {loading ? (
+            <p>Loading stock...</p>
+          ) : error ? (
+            <p className="text-error">{error}</p>
+          ) : products.length === 0 ? (
+            <p className="text-secondary">No raw furniture in stock yet.</p>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                    <th style={{ padding: '12px 16px' }}>Product Name</th>
+                    <th style={{ padding: '12px 16px' }}>Unit Price (LKR)</th>
+                    <th style={{ padding: '12px 16px' }}>Quantity</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((product) => (
+                    <tr key={product.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '16px', fontWeight: '600' }}>{product.productName}</td>
+                      <td style={{ padding: '16px', color: 'var(--primary)', fontWeight: '600' }}>{Number(product.unitPrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                      <td style={{ padding: '16px' }}>
+                        <span className={`badge ${product.quantity > 5 ? 'badge-success' : 'badge-primary'}`} style={{ background: product.quantity <= 5 ? 'rgba(220, 38, 38, 0.1)' : undefined, color: product.quantity <= 5 ? 'var(--error)' : undefined }}>
+                          {product.quantity} in stock
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px', textAlign: 'right' }}>
+                        <button 
+                          onClick={() => handleDelete(product.id)}
+                          style={{ background: 'transparent', border: 'none', color: 'var(--error)', cursor: 'pointer', padding: '8px' }}
+                          title="Delete Product"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+}

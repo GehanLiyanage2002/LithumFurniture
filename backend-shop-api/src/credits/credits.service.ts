@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Credit } from './credit.entity';
 import { Payment } from './payment.entity';
 import { CreateCreditDto } from './dto/create-credit.dto';
+import { ProductsService } from '../products/products.service';
 
 @Injectable()
 export class CreditsService {
@@ -12,11 +13,19 @@ export class CreditsService {
     private creditsRepository: Repository<Credit>,
     @InjectRepository(Payment)
     private paymentRepository: Repository<Payment>,
+    private productsService: ProductsService,
   ) {}
 
   async create(createCreditDto: CreateCreditDto): Promise<Credit> {
     const credit = this.creditsRepository.create(createCreditDto);
-    return this.creditsRepository.save(credit);
+    const saved = await this.creditsRepository.save(credit);
+    
+    // Decrease stock for raw furniture
+    if (createCreditDto.productName) {
+      await this.productsService.decreaseStockByName(createCreditDto.productName);
+    }
+    
+    return saved;
   }
 
   async findAll(): Promise<Credit[]> {

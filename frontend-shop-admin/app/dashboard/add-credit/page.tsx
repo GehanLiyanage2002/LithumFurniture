@@ -22,6 +22,27 @@ export default function AddCreditPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  const [products, setProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const token = localStorage.getItem("admin_token");
+      try {
+        const res = await fetch("http://localhost:4000/products", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProducts(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch products", err);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
+
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
     if (!token) {
@@ -76,6 +97,8 @@ export default function AddCreditPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!confirm("Are you sure you want to submit this credit record?")) return;
+    
     setLoading(true);
     setMessage("");
     
@@ -121,6 +144,22 @@ export default function AddCreditPage() {
     }
   };
 
+  const handleReset = () => {
+    if (!confirm("Are you sure you want to clear all form fields?")) return;
+    setFirstName("");
+    setLastName("");
+    setNic("");
+    setMobile1("");
+    setMobile2("");
+    setProductName("");
+    setProductPrice("");
+    setDownPayment("");
+    setMonths("1");
+    setNicFront(null);
+    setNicRear(null);
+    setMessage("");
+  };
+
   return (
     <div>
       <div className="page-header">
@@ -150,7 +189,31 @@ export default function AddCreditPage() {
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
               <label>Product Name <span style={{ color: 'var(--error)' }}>*</span></label>
-              <input required type="text" className="input-field" value={productName} onChange={e => setProductName(e.target.value)} />
+              <input 
+                required 
+                type="text"
+                list="product-list"
+                className="input-field" 
+                value={productName} 
+                onChange={e => {
+                  const val = e.target.value;
+                  setProductName(val);
+                  if (val.trim() === "") {
+                    setProductPrice("");
+                  } else {
+                    const selected = products.find(p => p.productName === val);
+                    if (selected) {
+                      setProductPrice(selected.unitPrice.toString());
+                    }
+                  }
+                }}
+                placeholder="Select or type manually"
+              />
+              <datalist id="product-list">
+                {products.map(p => (
+                  <option key={p.id} value={p.productName} />
+                ))}
+              </datalist>
             </div>
           </div>
 
@@ -209,7 +272,10 @@ export default function AddCreditPage() {
 
           {message && <p className={message.includes("success") ? "text-success text-center" : "text-error text-center"}>{message}</p>}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px', gap: '16px' }}>
+            <button type="button" className="btn-outline" onClick={handleReset} disabled={loading} style={{ padding: '16px 32px' }}>
+              Reset Form
+            </button>
             <button type="submit" className="btn-primary" disabled={loading} style={{ width: 'auto', padding: '16px 40px' }}>
               {loading ? "Processing..." : "Submit Credit Record"}
             </button>
