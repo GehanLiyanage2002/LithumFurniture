@@ -14,14 +14,17 @@ export class Credit {
   @Column()
   nic: string;
 
-  @Column()
+  @Column({ default: '' })
   mobile1: string;
 
-  @Column()
+  @Column({ default: '' })
   mobile2: string;
 
   @Column()
   productName: string;
+
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  productPrice: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
   downPayment: number;
@@ -35,8 +38,17 @@ export class Credit {
   @Column('decimal', { precision: 10, scale: 2 })
   totalPayment: number;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   monthlyInstallment: number;
+
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  paidAmount: number;
+
+  @Column('int', { default: 0 })
+  paymentsMade: number;
+
+  @Column({ default: 'ACTIVE' })
+  status: string;
 
   @Column({ nullable: true })
   nicFrontImageHash: string;

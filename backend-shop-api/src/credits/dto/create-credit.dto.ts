@@ -26,6 +26,9 @@ export class CreateCreditDto {
   productName: string;
 
   @IsNumber()
+  productPrice: number;
+
+  @IsNumber()
   downPayment: number;
 
   @IsNumber()

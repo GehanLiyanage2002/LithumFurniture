@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { CreditsService } from './credits.service';
 import { CreateCreditDto } from './dto/create-credit.dto';
 import * as crypto from 'crypto';
@@ -23,5 +23,24 @@ export class CreditsController {
   @Get()
   findAll() {
     return this.creditsService.findAll();
+  }
+
+  @Post(':id/recalculate')
+  recalculate(@Param('id') id: string, @Body('actualMonths') actualMonths: number) {
+    return this.creditsService.recalculate(id, actualMonths);
+  }
+
+  @Post(':id/pay')
+  makePayment(
+    @Param('id') id: string, 
+    @Body('amount') amount: number,
+    @Body('monthsCovered') monthsCovered: number
+  ) {
+    return this.creditsService.makePayment(id, amount, monthsCovered || 1);
+  }
+
+  @Get(':id/payments')
+  getPayments(@Param('id') id: string) {
+    return this.creditsService.getPayments(id);
   }
 }

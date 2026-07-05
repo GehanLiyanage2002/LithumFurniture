@@ -95,12 +95,13 @@ export default function AddCreditPage() {
           mobile1,
           mobile2,
           productName,
+          productPrice: parseFloat(productPrice) || 0,
           downPayment: parseFloat(downPayment) || 0,
           interestRate,
           months: parseInt(months, 10),
           totalPayment: calculateTotal(),
           monthlyInstallment: calculateMonthly(),
-          nicFrontImageHash: nicFront, // Send base64, backend will hash it
+          nicFrontImageHash: nicFront,
           nicRearImageHash: nicRear
         }),
       });
