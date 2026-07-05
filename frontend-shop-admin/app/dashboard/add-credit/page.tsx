@@ -122,64 +122,60 @@ export default function AddCreditPage() {
   };
 
   return (
-    <div className="dashboard-container">
-      <header className="dashboard-header glass-panel" style={{ padding: '20px 30px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button onClick={() => router.push("/dashboard")} className="logout-btn" style={{ padding: '8px 16px' }}>&larr; Back</button>
-          <h2 style={{ margin: 0 }}>Lithum Furniture <span style={{ color: 'var(--primary-color)' }}>Admin</span></h2>
-        </div>
-      </header>
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Provide Goods on Credit</h1>
+      </div>
 
-      <div className="glass-panel" style={{ padding: '40px', maxWidth: '800px', margin: '0 auto' }}>
-        <h3 className="mb-4" style={{ fontSize: '1.8rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '16px' }}>Provide Goods on Credit</h3>
-        <p className="text-secondary" style={{ marginBottom: '24px' }}>Please fill out all required fields marked with <span style={{ color: 'var(--error-color)' }}>*</span></p>
+      <div className="card" style={{ maxWidth: '800px' }}>
+        <p className="text-secondary" style={{ marginBottom: '24px' }}>Please fill out all required fields marked with <span style={{ color: 'var(--error)' }}>*</span></p>
         
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '24px' }}>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>First Name <span style={{ color: 'var(--error-color)' }}>*</span></label>
+              <label>First Name <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="text" className="input-field" value={firstName} onChange={e => setFirstName(e.target.value)} />
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Last Name <span style={{ color: 'var(--error-color)' }}>*</span></label>
+              <label>Last Name <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="text" className="input-field" value={lastName} onChange={e => setLastName(e.target.value)} />
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>National ID (NIC) <span style={{ color: 'var(--error-color)' }}>*</span></label>
+              <label>National ID (NIC) <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="text" className="input-field" value={nic} onChange={e => setNic(e.target.value)} />
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Product Name <span style={{ color: 'var(--error-color)' }}>*</span></label>
+              <label>Product Name <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="text" className="input-field" value={productName} onChange={e => setProductName(e.target.value)} />
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Mobile Number 1 <span style={{ color: 'var(--error-color)' }}>*</span></label>
+              <label>Mobile Number 1 <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="text" className="input-field" placeholder="e.g. 0712345678" value={mobile1} onChange={e => setMobile1(e.target.value)} />
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Mobile Number 2 <span style={{ color: 'var(--error-color)' }}>*</span></label>
+              <label>Mobile Number 2 <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="text" className="input-field" placeholder="e.g. 0777654321" value={mobile2} onChange={e => setMobile2(e.target.value)} />
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Product Price (LKR) <span style={{ color: 'var(--error-color)' }}>*</span></label>
+              <label>Product Price (LKR) <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="number" min="0" step="0.01" className="input-field" value={productPrice} onChange={e => setProductPrice(e.target.value)} />
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Down Payment (LKR) <span style={{ color: 'var(--error-color)' }}>*</span></label>
+              <label>Down Payment (LKR) <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="number" min="0" step="0.01" className="input-field" value={downPayment} onChange={e => setDownPayment(e.target.value)} />
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>Months (1-10) <span style={{ color: 'var(--error-color)' }}>*</span></label>
+              <label>Months (1-10) <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="number" min="1" max="10" className="input-field" value={months} onChange={e => setMonths(e.target.value)} />
             </div>
           </div>
@@ -188,15 +184,15 @@ export default function AddCreditPage() {
             <h4 style={{ marginBottom: '16px', color: 'var(--text-primary)' }}>Payment Summary</h4>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span className="text-secondary">Interest Rate:</span>
-              <strong style={{ color: 'var(--primary-color)' }}>{interestRate}%</strong>
+              <strong style={{ color: 'var(--primary)' }}>{interestRate}%</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span className="text-secondary">Total Payable:</span>
-              <strong style={{ color: 'var(--primary-color)' }}>LKR {calculateTotal().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+              <strong style={{ color: 'var(--primary)' }}>LKR {calculateTotal().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span className="text-secondary">Monthly Installment:</span>
-              <strong style={{ color: 'var(--primary-color)', fontSize: '1.2rem' }}>LKR {calculateMonthly().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+              <strong style={{ color: 'var(--primary)', fontSize: '1.2rem' }}>LKR {calculateMonthly().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
             </div>
           </div>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { CreditCard, CheckCircle, Search, Filter } from "lucide-react";
 
 interface Credit {
   id: string;
@@ -181,35 +182,37 @@ export default function CreditHistoryPage() {
   }, [searchTerm, filterStatus]);
 
   return (
-    <div className="dashboard-container">
-      <header className="dashboard-header glass-panel" style={{ padding: '20px 30px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button onClick={() => router.push("/dashboard")} className="logout-btn" style={{ padding: '8px 16px' }}>&larr; Back</button>
-          <h2 style={{ margin: 0 }}>Lithum Furniture <span style={{ color: 'var(--primary-color)' }}>Admin</span></h2>
-        </div>
-      </header>
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Credit History</h1>
+      </div>
 
-      <div className="glass-panel" style={{ padding: '40px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--surface-border)', paddingBottom: '16px', marginBottom: '20px', flexWrap: 'wrap', gap: '16px' }}>
-          <h3 style={{ fontSize: '1.8rem', margin: 0 }}>Credit History</h3>
+      <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '24px', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
           
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <input 
-              type="text" 
-              placeholder="Search Name, NIC, or Mobile..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--surface-border)', outline: 'none', minWidth: '250px' }}
-            />
-            <select 
-              value={filterStatus} 
-              onChange={(e) => setFilterStatus(e.target.value)}
-              style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--surface-border)', outline: 'none', background: '#fff' }}
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="ACTIVE">Active</option>
-              <option value="COMPLETED">Completed</option>
-            </select>
+            <div style={{ position: 'relative' }}>
+              <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+              <input 
+                type="text" 
+                placeholder="Search Name, NIC, or Mobile..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ padding: '12px 16px 12px 40px', borderRadius: '8px', border: '1px solid var(--border)', outline: 'none', minWidth: '280px', fontSize: '0.95rem' }}
+              />
+            </div>
+            <div style={{ position: 'relative' }}>
+              <Filter size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', pointerEvents: 'none' }} />
+              <select 
+                value={filterStatus} 
+                onChange={(e) => setFilterStatus(e.target.value)}
+                style={{ padding: '12px 16px 12px 40px', borderRadius: '8px', border: '1px solid var(--border)', outline: 'none', background: '#fff', fontSize: '0.95rem', cursor: 'pointer' }}
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="COMPLETED">Completed</option>
+              </select>
+            </div>
           </div>
         </div>
         
@@ -251,17 +254,17 @@ export default function CreditHistoryPage() {
                       </td>
                       <td style={{ padding: '12px 16px' }}>{credit.productName}</td>
                       <td style={{ padding: '12px 16px' }}>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Total: {Number(credit.totalPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
-                        <div style={{ fontWeight: 'bold', color: 'var(--error-color)' }}>Left: {remaining.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--primary-color)' }}>Next: {Number(credit.monthlyInstallment).toLocaleString('en-US', {minimumFractionDigits: 2})} / mo</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Total: <strong style={{ color: 'var(--text-main)' }}>{Number(credit.totalPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong></div>
+                        <div style={{ fontWeight: 'bold', color: 'var(--error)', fontSize: '1.1rem', marginTop: '4px' }}>Left: {remaining.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                        <div style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: '600', marginTop: '4px' }}>Next: {Number(credit.monthlyInstallment).toLocaleString('en-US', {minimumFractionDigits: 2})} / mo</div>
                       </td>
                       <td style={{ padding: '12px 16px' }}>
                         <div>{credit.months} months</div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{credit.interestRate}% Interest</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--success-color)' }}>{credit.paymentsMade || 0} payments made</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--success)' }}>{credit.paymentsMade || 0} payments made</div>
                       </td>
                       <td style={{ padding: '12px 16px' }}>
-                        <span style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', background: credit.status === 'COMPLETED' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(99, 102, 241, 0.1)', color: credit.status === 'COMPLETED' ? 'var(--success-color)' : 'var(--primary-color)' }}>
+                        <span className={credit.status === 'COMPLETED' ? 'badge badge-success' : 'badge badge-primary'}>
                           {credit.status || 'ACTIVE'}
                         </span>
                       </td>
@@ -270,13 +273,13 @@ export default function CreditHistoryPage() {
                           <>
                             <button 
                               onClick={() => openPayModal(credit)}
-                              style={{ padding: '6px 12px', background: 'var(--primary-color)', border: 'none', color: '#fff', borderRadius: '6px', cursor: 'pointer' }}>
-                              Make Payment
+                              className="btn-primary" style={{ padding: '8px 12px', fontSize: '0.85rem' }}>
+                              <CreditCard size={16} /> Make Payment
                             </button>
                             <button 
                               onClick={() => { setSettleTargetId(credit.id); setActualMonths(credit.months.toString()); setSettleModalOpen(true); }}
-                              style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--primary-color)', color: 'var(--primary-color)', borderRadius: '6px', cursor: 'pointer' }}>
-                              Settle Early
+                              className="btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 12px', fontSize: '0.85rem' }}>
+                              <CheckCircle size={16} /> Settle Early
                             </button>
                           </>
                         )}
@@ -316,66 +319,64 @@ export default function CreditHistoryPage() {
       </div>
 
       {settleModalOpen && (
-        <>
-          <div className="slide-panel-overlay open" onClick={() => setSettleModalOpen(false)} />
-          <div className="modal-panel open" style={{ maxWidth: '400px' }}>
-            <div className="modal-panel-header">
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSettleModalOpen(false); }}>
+          <div className="modal-content" style={{ maxWidth: '400px' }}>
+            <div className="modal-header">
               <h3>Early Settlement</h3>
               <button className="close-btn" onClick={() => setSettleModalOpen(false)}>&times;</button>
             </div>
-            <div className="modal-panel-content">
+            <div className="modal-body">
               <p className="text-secondary mb-4">Enter the actual number of months it took to complete the payment. The interest will be recalculated based on this duration.</p>
               <form onSubmit={handleSettle}>
                 <div className="input-group">
                   <label>Actual Months Completed</label>
                   <input required type="number" min="1" max="10" className="input-field" value={actualMonths} onChange={e => setActualMonths(e.target.value)} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                  <button type="button" onClick={() => setSettleModalOpen(false)} className="logout-btn" style={{ marginRight: '10px' }}>Cancel</button>
-                  <button type="submit" className="btn-primary" style={{ width: 'auto' }} disabled={settleLoading}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px', gap: '12px' }}>
+                  <button type="button" onClick={() => setSettleModalOpen(false)} className="btn-outline">Cancel</button>
+                  <button type="submit" className="btn-primary" disabled={settleLoading}>
                     {settleLoading ? "Processing..." : "Recalculate & Settle"}
                   </button>
                 </div>
               </form>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {payModalOpen && payTargetCredit && (
-        <>
-          <div className="slide-panel-overlay open" onClick={() => setPayModalOpen(false)} />
-          <div className="modal-panel open" style={{ maxWidth: '500px' }}>
-            <div className="modal-panel-header">
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setPayModalOpen(false); }}>
+          <div className="modal-content" style={{ maxWidth: '550px' }}>
+            <div className="modal-header">
               <h3>Monthly Installment Payment</h3>
               <button className="close-btn" onClick={() => setPayModalOpen(false)}>&times;</button>
             </div>
-            <div className="modal-panel-content">
-              <div style={{ background: 'rgba(0,0,0,0.02)', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
-                <p style={{ margin: '0 0 8px 0', display: 'flex', justifyContent: 'space-between' }}>
+            <div className="modal-body">
+              <div style={{ background: '#F9FAFB', padding: '20px', borderRadius: '12px', marginBottom: '24px', border: '1px solid var(--border)' }}>
+                <p style={{ margin: '0 0 12px 0', display: 'flex', justifyContent: 'space-between' }}>
                   <span className="text-secondary">Total Payable:</span> 
-                  <strong>LKR {Number(payTargetCredit.totalPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+                  <strong style={{ fontSize: '1.1rem' }}>LKR {Number(payTargetCredit.totalPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
                 </p>
-                <p style={{ margin: '0 0 8px 0', display: 'flex', justifyContent: 'space-between' }}>
+                <p style={{ margin: '0 0 12px 0', display: 'flex', justifyContent: 'space-between' }}>
                   <span className="text-secondary">Total Paid:</span> 
-                  <strong style={{ color: 'var(--success-color)' }}>LKR {Number(payTargetCredit.paidAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+                  <strong style={{ color: 'var(--success)', fontSize: '1.1rem' }}>LKR {Number(payTargetCredit.paidAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
                 </p>
                 <p style={{ margin: '0', display: 'flex', justifyContent: 'space-between' }}>
                   <span className="text-secondary">Remaining Balance:</span> 
-                  <strong style={{ color: 'var(--error-color)' }}>LKR {(Number(payTargetCredit.totalPayment) - Number(payTargetCredit.paidAmount || 0)).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+                  <strong style={{ color: 'var(--error)', fontSize: '1.2rem' }}>LKR {(Number(payTargetCredit.totalPayment) - Number(payTargetCredit.paidAmount || 0)).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
                 </p>
               </div>
 
               {paymentsHistory.length > 0 && (
-                <div style={{ marginBottom: '20px' }}>
-                  <h4 style={{ fontSize: '1rem', marginBottom: '8px' }}>Payment History</h4>
-                  <div style={{ maxHeight: '150px', overflowY: 'auto', background: '#fff', border: '1px solid var(--surface-border)', borderRadius: '8px' }}>
+                <div style={{ marginBottom: '24px' }}>
+                  <h4 style={{ fontSize: '1rem', marginBottom: '12px', color: 'var(--text-main)' }}>Payment History</h4>
+                  <div style={{ maxHeight: '180px', overflowY: 'auto', background: '#fff', border: '1px solid var(--border)', borderRadius: '8px' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                       <tbody>
                         {paymentsHistory.map(p => (
-                          <tr key={p.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                            <td style={{ padding: '8px' }}>{new Date(p.createdAt).toLocaleDateString()}</td>
-                            <td style={{ padding: '8px', textAlign: 'right', color: 'var(--success-color)', fontWeight: 'bold' }}>+ LKR {Number(p.amount).toLocaleString()}</td>
+                          <tr key={p.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                            <td style={{ padding: '12px 16px' }}>{new Date(p.createdAt).toLocaleDateString()}</td>
+                            <td style={{ padding: '12px 16px', textAlign: 'right', color: 'var(--success)', fontWeight: '600' }}>+ LKR {Number(p.amount).toLocaleString()}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -388,23 +389,23 @@ export default function CreditHistoryPage() {
                 <div className="input-group">
                   <label>Months Covered by this Payment</label>
                   <input required type="number" min="1" max="10" className="input-field" value={payMonthsCovered} onChange={e => handleMonthsCoveredChange(e.target.value)} />
-                  <small className="text-secondary" style={{ marginTop: '4px', display: 'block' }}>If they skipped a month, set this to 2 to record that this payment covers 2 months.</small>
+                  <small className="text-secondary" style={{ marginTop: '6px', display: 'block', fontSize: '0.8rem' }}>If they skipped a month, set this to 2 to record that this payment covers 2 months.</small>
                 </div>
                 <div className="input-group">
                   <label>Amount Paying Now (LKR)</label>
                   <input required type="number" step="0.01" max={(Number(payTargetCredit.totalPayment) - Number(payTargetCredit.paidAmount || 0)).toString()} className="input-field" value={payAmount} onChange={e => setPayAmount(e.target.value)} />
-                  <small className="text-secondary" style={{ marginTop: '4px', display: 'block' }}>If customer pays extra, future monthly amounts will automatically recalculate.</small>
+                  <small className="text-secondary" style={{ marginTop: '6px', display: 'block', fontSize: '0.8rem' }}>If customer pays extra, future monthly amounts will automatically recalculate.</small>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                  <button type="button" onClick={() => setPayModalOpen(false)} className="logout-btn" style={{ marginRight: '10px' }}>Cancel</button>
-                  <button type="submit" className="btn-primary" style={{ width: 'auto' }} disabled={payLoading}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '32px', gap: '12px' }}>
+                  <button type="button" onClick={() => setPayModalOpen(false)} className="btn-outline">Cancel</button>
+                  <button type="submit" className="btn-primary" disabled={payLoading}>
                     {payLoading ? "Processing..." : "Confirm Payment"}
                   </button>
                 </div>
               </form>
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
