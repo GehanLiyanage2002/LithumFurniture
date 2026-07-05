@@ -17,8 +17,11 @@ export class Product {
   @Column('int')
   quantity: number;
 
-  @Column({ default: 'RAW' }) // RAW means shop-made furniture
+  @Column({ default: 'RAW' }) // RAW means shop-made furniture, SUPPLIER means bought from distributor
   category: string;
+
+  @Column({ nullable: true })
+  supplierName: string;
 
   @CreateDateColumn()
   createdAt: Date;

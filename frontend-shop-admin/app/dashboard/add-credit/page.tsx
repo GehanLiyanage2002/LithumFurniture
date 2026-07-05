@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Camera, X } from "lucide-react";
+import { FileText, Camera, X, Printer } from "lucide-react";
+import Swal from 'sweetalert2';
 
 export default function AddCreditPage() {
   const router = useRouter();
@@ -31,6 +32,7 @@ export default function AddCreditPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [products, setProducts] = useState<any[]>([]);
+  const [receiptData, setReceiptData] = useState<any>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -120,7 +122,18 @@ export default function AddCreditPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!confirm("Are you sure you want to submit this credit record?")) return;
+    
+    const result = await Swal.fire({
+      title: 'Confirm Submission',
+      text: "Are you sure you want to submit this credit record?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669', // success green
+      cancelButtonColor: '#6B7280', // secondary gray
+      confirmButtonText: 'Yes, submit it!'
+    });
+    
+    if (!result.isConfirmed) return;
     
     setLoading(true);
     setMessage("");
@@ -150,16 +163,71 @@ export default function AddCreditPage() {
         }),
       });
       if (!res.ok) throw new Error("Failed to create credit record.");
+      const savedCredit = await res.json();
       setMessage("Credit record created successfully!");
-      setTimeout(() => router.push("/dashboard"), 2000);
+      setReceiptData({
+        ...savedCredit,
+        date: new Date().toLocaleString()
+      });
     } catch (err: any) { 
       setMessage(err.message); 
+    } finally {
       setLoading(false); 
     }
   };
 
-  const handleReset = () => {
-    if (!confirm("Are you sure you want to clear all form fields?")) return;
+  const printReceipt = () => {
+    const printContent = document.getElementById("credit-receipt-content");
+    if (!printContent) return;
+    
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+    
+    iframe.contentWindow?.document.write(`
+      <html>
+        <head>
+          <title>Credit Receipt - ${receiptData.id}</title>
+          <style>
+            body { font-family: 'Inter', sans-serif, Arial; margin: 0; padding: 20px; font-size: 14px; color: #000; }
+            h2 { margin: 0 0 8px 0; font-size: 1.5rem; font-weight: 800; text-align: center; }
+            p { margin: 0 0 4px 0; font-size: 0.85rem; text-align: center; color: #555; }
+            .details-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; color: #333; }
+            .divider { border-top: 1px dashed #ccc; margin: 16px 0; }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+    
+    iframe.contentWindow?.document.close();
+    iframe.contentWindow?.focus();
+    setTimeout(() => {
+      iframe.contentWindow?.print();
+      document.body.removeChild(iframe);
+    }, 250);
+  };
+
+  const closeReceipt = () => {
+    setReceiptData(null);
+    router.push("/dashboard/history");
+  };
+
+  const handleReset = async () => {
+    const result = await Swal.fire({
+      title: 'Clear Form?',
+      text: "Are you sure you want to clear all form fields?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#DC2626', // error red
+      cancelButtonColor: '#6B7280',
+      confirmButtonText: 'Yes, clear it!'
+    });
+    
+    if (!result.isConfirmed) return;
+
     setFirstName(""); 
     setLastName(""); 
     setBillNo(""); 
@@ -343,6 +411,92 @@ export default function AddCreditPage() {
           </div>
         </form>
       </div>
+
+      {/* Credit Receipt Modal */}
+      {receiptData && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeReceipt(); }}>
+          <div className="modal-content" style={{ maxWidth: '450px', background: '#fff' }}>
+            
+            <div id="credit-receipt-content">
+              <div style={{ padding: '32px', textAlign: 'center', borderBottom: '2px dashed #ccc' }}>
+                <h2 style={{ margin: '0 0 8px 0', color: '#000', fontSize: '1.5rem', fontWeight: '800' }}>LITHUM FURNITURE</h2>
+                <p style={{ margin: '0 0 4px 0', color: '#555', fontSize: '0.85rem', textAlign: 'center' }}>123 Main Street, Colombo</p>
+                <p style={{ margin: '0 0 16px 0', color: '#555', fontSize: '0.85rem', textAlign: 'center' }}>Tel: 011-2345678</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#333' }}>
+                  <span>Date: {receiptData.date.split(',')[0]}</span>
+                  <span>Time: {receiptData.date.split(',')[1]}</span>
+                </div>
+                <div style={{ textAlign: 'left', marginTop: '8px', fontSize: '0.85rem', color: '#333' }}>
+                  <span>Credit ID: {receiptData.id.substring(0, 8).toUpperCase()}</span>
+                </div>
+              </div>
+
+              <div style={{ padding: '24px 32px' }}>
+                <h4 style={{ margin: '0 0 12px 0', color: '#000', fontSize: '1rem', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>Customer Details</h4>
+                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
+                  <span>Name:</span>
+                  <strong>{receiptData.firstName} {receiptData.lastName}</strong>
+                </div>
+                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
+                  <span>NIC:</span>
+                  <span>{receiptData.nic}</span>
+                </div>
+                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
+                  <span>Contact:</span>
+                  <span>{receiptData.mobile1}</span>
+                </div>
+                {receiptData.billNo && (
+                  <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
+                    <span>Bill No:</span>
+                    <span>{receiptData.billNo}</span>
+                  </div>
+                )}
+
+                <h4 style={{ margin: '24px 0 12px 0', color: '#000', fontSize: '1rem', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>Credit Plan</h4>
+                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
+                  <span>Product:</span>
+                  <strong>{receiptData.productName}</strong>
+                </div>
+                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
+                  <span>Product Price:</span>
+                  <span>LKR {Number(receiptData.productPrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                </div>
+                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
+                  <span>Down Payment (Paid):</span>
+                  <strong style={{ color: '#059669' }}>LKR {Number(receiptData.downPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+                </div>
+                
+                <div className="divider" style={{ borderTop: '1px dashed #ccc', margin: '16px 0' }}></div>
+                
+                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
+                  <span>Loan Amount:</span>
+                  <span>LKR {Number(receiptData.totalPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                </div>
+                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
+                  <span>Duration:</span>
+                  <span>{receiptData.months} Months</span>
+                </div>
+                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '1.1rem', color: '#000', fontWeight: 'bold' }}>
+                  <span>Monthly Installment:</span>
+                  <span>LKR {Number(receiptData.monthlyInstallment).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                </div>
+              </div>
+
+              <div style={{ padding: '0 32px 32px', textAlign: 'center' }}>
+                <p style={{ margin: '0 0 4px 0', color: '#000', fontWeight: 'bold', textAlign: 'center' }}>THANK YOU!</p>
+                <p style={{ margin: 0, color: '#666', fontSize: '0.85rem', textAlign: 'center' }}>Please retain this receipt for your records.</p>
+              </div>
+            </div>
+
+            <div style={{ padding: '16px', background: '#F9FAFB', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', gap: '16px', borderRadius: '0 0 12px 12px' }}>
+              <button className="btn-outline" onClick={closeReceipt}>Close & View History</button>
+              <button className="btn-primary" onClick={printReceipt} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Printer size={18} style={{ marginRight: '8px' }} /> Print Agreement
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

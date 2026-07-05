@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Package, PlusCircle, Trash2 } from "lucide-react";
+import Swal from 'sweetalert2';
 
 interface Product {
   id: string;
@@ -43,7 +44,7 @@ export default function ManageStockPage() {
       });
       if (!res.ok) throw new Error("Failed to fetch stock");
       const data = await res.json();
-      setProducts(data);
+      setProducts(data.filter((p: Product) => p.category === 'RAW' || !p.category));
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -101,7 +102,17 @@ export default function ManageStockPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+    const result = await Swal.fire({
+      title: 'Delete Product?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#DC2626',
+      cancelButtonColor: '#6B7280',
+      confirmButtonText: 'Yes, delete it!'
+    });
+    
+    if (!result.isConfirmed) return;
     
     const token = localStorage.getItem("admin_token");
     try {

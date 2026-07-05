@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingCart, RefreshCcw, CheckCircle, Printer } from "lucide-react";
+import Swal from 'sweetalert2';
 
 interface Product {
   id: string;
@@ -66,8 +67,18 @@ export default function CashierPage() {
     return Math.max(0, subtotal - discount);
   };
 
-  const handleReset = () => {
-    if (!confirm("Are you sure you want to reset this transaction?")) return;
+  const handleReset = async () => {
+    const result = await Swal.fire({
+      title: 'Reset Transaction?',
+      text: "Are you sure you want to reset this transaction?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#DC2626',
+      cancelButtonColor: '#6B7280',
+      confirmButtonText: 'Yes, reset it!'
+    });
+    
+    if (!result.isConfirmed) return;
     setProductName("");
     setUnitPrice("");
     setQuantity("1");
@@ -78,7 +89,17 @@ export default function CashierPage() {
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!confirm("Are you sure you want to checkout this cash sale?")) return;
+    const result = await Swal.fire({
+      title: 'Confirm Checkout',
+      text: "Are you sure you want to checkout this cash sale?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#6B7280',
+      confirmButtonText: 'Yes, checkout!'
+    });
+    
+    if (!result.isConfirmed) return;
     
     setLoading(true);
     setMessage("");
@@ -135,39 +156,54 @@ export default function CashierPage() {
   };
 
   const printReceipt = () => {
-    window.print();
+    const printContent = document.getElementById("receipt-content");
+    if (!printContent) return;
+    
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+    
+    iframe.contentWindow?.document.write(`
+      <html>
+        <head>
+          <title>Receipt - ${receiptData.receiptId}</title>
+          <style>
+            body { font-family: 'Inter', sans-serif, Arial; margin: 0; padding: 20px; font-size: 14px; color: #000; }
+            .text-center { text-align: center; }
+            .fw-bold { font-weight: bold; }
+            .d-flex { display: flex; justify-content: space-between; }
+            .col-2 { flex: 2; }
+            .col-1 { flex: 1; text-align: center; }
+            .col-right { flex: 1; text-align: right; }
+            .border-bottom { border-bottom: 1px solid #ccc; padding-bottom: 8px; margin-bottom: 16px; }
+            .border-top { border-top: 2px solid #ccc; padding-top: 16px; margin-top: 8px; }
+            h2 { margin: 0 0 8px 0; font-size: 1.5rem; font-weight: 800; }
+            p { margin: 0 0 4px 0; font-size: 0.85rem; color: #555; }
+            .small-text { font-size: 0.85rem; color: #333; }
+            .muted { color: #666; }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+    
+    iframe.contentWindow?.document.close();
+    iframe.contentWindow?.focus();
+    setTimeout(() => {
+      iframe.contentWindow?.print();
+      document.body.removeChild(iframe);
+    }, 250);
   };
 
   return (
     <div>
-      <style dangerouslySetInnerHTML={{__html: `
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          .receipt-printable, .receipt-printable * {
-            visibility: visible;
-          }
-          .receipt-printable {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            margin: 0;
-            padding: 20px;
-            box-shadow: none !important;
-          }
-          .no-print {
-            display: none !important;
-          }
-        }
-      `}} />
-
-      <div className="page-header no-print">
+      <div className="page-header">
         <h1 className="page-title">Cashier Checkout</h1>
       </div>
 
-      <div className="card no-print" style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', color: 'var(--primary)' }}>
           <ShoppingCart size={24} style={{ marginRight: '12px' }} />
           <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Direct Cash Sale</h3>
@@ -269,61 +305,63 @@ export default function CashierPage() {
         </form>
       </div>
 
-      {/* Receipt Modal & Printable Area */}
+      {/* Receipt Modal */}
       {receiptData && (
-        <div className="modal-overlay no-print" onClick={(e) => { if (e.target === e.currentTarget) closeReceipt(); }}>
-          <div className="modal-content receipt-printable" style={{ maxWidth: '400px', background: '#fff' }}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeReceipt(); }}>
+          <div className="modal-content" style={{ maxWidth: '400px', background: '#fff' }}>
             
-            <div style={{ padding: '32px', textAlign: 'center', borderBottom: '2px dashed #ccc' }}>
-              <h2 style={{ margin: '0 0 8px 0', color: '#000', fontSize: '1.5rem', fontWeight: '800' }}>LITHUM FURNITURE</h2>
-              <p style={{ margin: '0 0 4px 0', color: '#555', fontSize: '0.85rem' }}>123 Main Street, Colombo</p>
-              <p style={{ margin: '0 0 16px 0', color: '#555', fontSize: '0.85rem' }}>Tel: 011-2345678</p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#333' }}>
-                <span>Date: {receiptData.date.split(',')[0]}</span>
-                <span>Time: {receiptData.date.split(',')[1]}</span>
-              </div>
-              <div style={{ textAlign: 'left', marginTop: '8px', fontSize: '0.85rem', color: '#333' }}>
-                <span>Receipt #: {receiptData.receiptId.substring(0, 8).toUpperCase()}</span>
-              </div>
-            </div>
-
-            <div style={{ padding: '24px 32px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderBottom: '1px solid #eee', paddingBottom: '8px', marginBottom: '16px' }}>
-                <span style={{ flex: 2, color: '#000' }}>Item</span>
-                <span style={{ flex: 1, textAlign: 'center', color: '#000' }}>Qty</span>
-                <span style={{ flex: 1, textAlign: 'right', color: '#000' }}>Amount</span>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '0.9rem', color: '#333' }}>
-                <span style={{ flex: 2 }}>{receiptData.productName} <br/><small style={{color: '#666'}}>@ {receiptData.unitPrice.toLocaleString()}</small></span>
-                <span style={{ flex: 1, textAlign: 'center' }}>{receiptData.quantity}</span>
-                <span style={{ flex: 1, textAlign: 'right' }}>{(receiptData.unitPrice * receiptData.quantity).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-              </div>
-
-              <div style={{ borderTop: '2px solid #ccc', paddingTop: '16px', marginTop: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                  <span>Subtotal</span>
-                  <span>{(receiptData.unitPrice * receiptData.quantity).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+            <div id="receipt-content">
+              <div style={{ padding: '32px', textAlign: 'center', borderBottom: '2px dashed #ccc' }}>
+                <h2 style={{ margin: '0 0 8px 0', color: '#000', fontSize: '1.5rem', fontWeight: '800' }}>LITHUM FURNITURE</h2>
+                <p style={{ margin: '0 0 4px 0', color: '#555', fontSize: '0.85rem' }}>123 Main Street, Colombo</p>
+                <p style={{ margin: '0 0 16px 0', color: '#555', fontSize: '0.85rem' }}>Tel: 011-2345678</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#333' }}>
+                  <span>Date: {receiptData.date.split(',')[0]}</span>
+                  <span>Time: {receiptData.date.split(',')[1]}</span>
                 </div>
-                {receiptData.discountValue > 0 && (
+                <div style={{ textAlign: 'left', marginTop: '8px', fontSize: '0.85rem', color: '#333' }}>
+                  <span>Receipt #: {receiptData.receiptId.substring(0, 8).toUpperCase()}</span>
+                </div>
+              </div>
+
+              <div style={{ padding: '24px 32px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderBottom: '1px solid #eee', paddingBottom: '8px', marginBottom: '16px' }}>
+                  <span style={{ flex: 2, color: '#000' }}>Item</span>
+                  <span style={{ flex: 1, textAlign: 'center', color: '#000' }}>Qty</span>
+                  <span style={{ flex: 1, textAlign: 'right', color: '#000' }}>Amount</span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '0.9rem', color: '#333' }}>
+                  <span style={{ flex: 2 }}>{receiptData.productName} <br/><small style={{color: '#666'}}>@ {receiptData.unitPrice.toLocaleString()}</small></span>
+                  <span style={{ flex: 1, textAlign: 'center' }}>{receiptData.quantity}</span>
+                  <span style={{ flex: 1, textAlign: 'right' }}>{(receiptData.unitPrice * receiptData.quantity).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                </div>
+
+                <div style={{ borderTop: '2px solid #ccc', paddingTop: '16px', marginTop: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                    <span>Discount</span>
-                    <span>- {receiptData.discountValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                    <span>Subtotal</span>
+                    <span>{(receiptData.unitPrice * receiptData.quantity).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
                   </div>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '1.2rem', fontWeight: 'bold', color: '#000' }}>
-                  <span>TOTAL</span>
-                  <span>LKR {receiptData.totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                  {receiptData.discountValue > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
+                      <span>Discount</span>
+                      <span>- {receiptData.discountValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '1.2rem', fontWeight: 'bold', color: '#000' }}>
+                    <span>TOTAL</span>
+                    <span>LKR {receiptData.totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                  </div>
                 </div>
+              </div>
+
+              <div style={{ padding: '16px 32px 32px', textAlign: 'center' }}>
+                <p style={{ margin: '0 0 4px 0', color: '#000', fontWeight: 'bold' }}>THANK YOU FOR SHOPPING!</p>
+                <p style={{ margin: 0, color: '#666', fontSize: '0.85rem' }}>Items can be exchanged within 7 days.</p>
               </div>
             </div>
 
-            <div style={{ padding: '16px 32px 32px', textAlign: 'center' }}>
-              <p style={{ margin: '0 0 4px 0', color: '#000', fontWeight: 'bold' }}>THANK YOU FOR SHOPPING!</p>
-              <p style={{ margin: 0, color: '#666', fontSize: '0.85rem' }}>Items can be exchanged within 7 days.</p>
-            </div>
-
-            <div className="no-print" style={{ padding: '16px', background: '#F9FAFB', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', gap: '16px' }}>
+            <div style={{ padding: '16px', background: '#F9FAFB', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', gap: '16px', borderRadius: '0 0 12px 12px' }}>
               <button className="btn-outline" onClick={closeReceipt}>Close</button>
               <button className="btn-primary" onClick={printReceipt} style={{ display: 'inline-flex', alignItems: 'center' }}>
                 <Printer size={18} style={{ marginRight: '8px' }} /> Print Receipt

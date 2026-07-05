@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { CreditsModule } from './credits/credits.module';
 import { ProductsModule } from './products/products.module';
 import { CashSalesModule } from './cash-sales/cash-sales.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
 
 @Module({
   imports: [
@@ -40,6 +41,8 @@ import { CashSalesModule } from './cash-sales/cash-sales.module';
     ProductsModule,
 
     CashSalesModule,
+
+    SuppliersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
