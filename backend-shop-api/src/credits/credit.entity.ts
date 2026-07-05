@@ -53,14 +53,14 @@ export class Credit {
   @Column({ default: 'ACTIVE' })
   status: string;
 
-  @Column({ nullable: true })
-  nicFrontImageHash: string;
+  @Column({ type: 'text', nullable: true })
+  nicFrontImage: string;
 
-  @Column({ nullable: true })
-  nicRearImageHash: string;
+  @Column({ type: 'text', nullable: true })
+  nicRearImage: string;
 
-  @Column({ nullable: true })
-  customerFaceHash: string;
+  @Column({ type: 'text', nullable: true })
+  customerFaceImage: string;
 
   @CreateDateColumn()
   createdAt: Date;

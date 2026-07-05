@@ -57,15 +57,11 @@ export class CreateCreditDto {
 
   @IsOptional()
   @IsString()
-  nicFrontImageHash?: string;
+  nicFrontImage?: string;
 
   @IsOptional()
   @IsString()
-  nicRearImageHash?: string;
-
-  @IsOptional()
-  @IsString()
-  customerFaceHash?: string;
+  nicRearImage?: string;
 
   @IsOptional()
   @IsString()

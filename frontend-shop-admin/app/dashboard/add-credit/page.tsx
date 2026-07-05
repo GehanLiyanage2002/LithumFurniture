@@ -144,8 +144,8 @@ export default function AddCreditPage() {
           months: parseInt(months, 10),
           totalPayment: calculateTotal(),
           monthlyInstallment: calculateMonthly(),
-          nicFrontImageHash: nicFront,
-          nicRearImageHash: nicRear,
+          nicFrontImage: nicFront,
+          nicRearImage: nicRear,
           customerFaceImage
         }),
       });

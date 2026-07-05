@@ -27,6 +27,11 @@ export default function ManageStockPage() {
   const [addLoading, setAddLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  const [restockModalOpen, setRestockModalOpen] = useState(false);
+  const [restockTargetProduct, setRestockTargetProduct] = useState<Product | null>(null);
+  const [restockAmount, setRestockAmount] = useState("1");
+  const [restockLoading, setRestockLoading] = useState(false);
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -108,6 +113,35 @@ export default function ManageStockPage() {
       fetchProducts();
     } catch (err: any) {
       alert(err.message);
+    }
+  };
+
+  const handleRestock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!restockTargetProduct) return;
+    setRestockLoading(true);
+
+    const token = localStorage.getItem("admin_token");
+    const amountToAdd = parseInt(restockAmount, 10);
+    const newQuantity = restockTargetProduct.quantity + amountToAdd;
+
+    try {
+      const res = await fetch(`http://localhost:4000/products/${restockTargetProduct.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ quantity: newQuantity })
+      });
+      if (!res.ok) throw new Error("Failed to restock product");
+      
+      setRestockModalOpen(false);
+      fetchProducts();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setRestockLoading(false);
     }
   };
 
@@ -213,13 +247,23 @@ export default function ManageStockPage() {
                         </span>
                       </td>
                       <td style={{ padding: '16px', textAlign: 'right' }}>
-                        <button 
-                          onClick={() => handleDelete(product.id)}
-                          style={{ background: 'transparent', border: 'none', color: 'var(--error)', cursor: 'pointer', padding: '8px' }}
-                          title="Delete Product"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                          <button 
+                            onClick={() => { setRestockTargetProduct(product); setRestockAmount("1"); setRestockModalOpen(true); }}
+                            className="btn-outline"
+                            style={{ padding: '6px 12px', fontSize: '0.8rem', color: 'var(--success)', borderColor: 'var(--success)' }}
+                            title="Restock Product"
+                          >
+                            <PlusCircle size={14} style={{ marginRight: '6px' }} /> Restock
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(product.id)}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--error)', cursor: 'pointer', padding: '6px 8px' }}
+                            title="Delete Product"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -256,8 +300,40 @@ export default function ManageStockPage() {
           )}
 
         </div>
-
       </div>
+
+      {/* Restock Modal */}
+      {restockModalOpen && restockTargetProduct && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setRestockModalOpen(false); }}>
+          <div className="modal-content" style={{ maxWidth: '400px' }}>
+            <div className="modal-header">
+              <h3>Restock Product</h3>
+              <button className="close-btn" onClick={() => setRestockModalOpen(false)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div style={{ background: '#F9FAFB', padding: '16px', borderRadius: '8px', marginBottom: '24px', border: '1px solid var(--border)' }}>
+                <strong style={{ fontSize: '1.1rem', color: 'var(--primary)', display: 'block', marginBottom: '8px' }}>{restockTargetProduct.productName}</strong>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                  <span className="text-secondary">Current Quantity:</span>
+                  <strong className={restockTargetProduct.quantity <= 5 ? 'text-error' : ''}>{restockTargetProduct.quantity}</strong>
+                </div>
+              </div>
+              <form onSubmit={handleRestock}>
+                <div className="input-group">
+                  <label>Quantity to Add</label>
+                  <input required type="number" min="1" className="input-field" value={restockAmount} onChange={e => setRestockAmount(e.target.value)} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px', gap: '12px' }}>
+                  <button type="button" onClick={() => setRestockModalOpen(false)} className="btn-outline">Cancel</button>
+                  <button type="submit" className="btn-primary" disabled={restockLoading} style={{ background: 'var(--success)', border: 'none' }}>
+                    {restockLoading ? "Restocking..." : "Confirm Restock"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -48,12 +48,26 @@ export class CreditsService {
 
     const payable = Number(credit.productPrice) - Number(credit.downPayment);
     const newTotalPayment = payable + (payable * newInterestRate / 100);
-    const newMonthlyInstallment = actualMonths > 0 ? newTotalPayment / actualMonths : 0;
+
+    const remainingToPay = newTotalPayment - Number(credit.paidAmount || 0);
+
+    // Record the final settlement payment if they still owe money under the new rate
+    if (remainingToPay > 0) {
+      const payment = this.paymentRepository.create({ creditId: id, amount: remainingToPay });
+      await this.paymentRepository.save(payment);
+      credit.paidAmount = newTotalPayment;
+      credit.paymentsMade = actualMonths;
+    } else if (remainingToPay <= 0) {
+      // If remainingToPay is 0 or negative (they already paid enough to cover the new reduced total), 
+      // we cap the totalPayment to what they actually paid so Due becomes 0.
+      credit.paidAmount = Number(credit.paidAmount || 0);
+      credit.paymentsMade = actualMonths;
+    }
 
     credit.months = actualMonths;
     credit.interestRate = newInterestRate;
     credit.totalPayment = newTotalPayment;
-    credit.monthlyInstallment = newMonthlyInstallment;
+    credit.monthlyInstallment = 0;
     credit.status = 'COMPLETED';
 
     return this.creditsRepository.save(credit);

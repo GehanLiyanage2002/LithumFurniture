@@ -2,13 +2,16 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { CreditCard, CheckCircle, Search, Filter, History, User, Hash, Phone, CreditCard as IdCard } from "lucide-react";
+import { CreditCard, CheckCircle, Search, Filter, History, User, Phone, CreditCard as IdCard } from "lucide-react";
 
 interface Credit {
   id: string;
   firstName: string;
   lastName: string;
   nic: string;
+  nicFrontImage?: string;
+  nicRearImage?: string;
+  customerFaceImage?: string;
   mobile1: string;
   mobile2: string;
   productName: string;
@@ -50,6 +53,7 @@ export default function CreditHistoryPage() {
   // Profile Modal State
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [profileTargetCredit, setProfileTargetCredit] = useState<Credit | null>(null);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
   // Search, Filter, and Pagination State
   const [searchTerm, setSearchTerm] = useState("");
@@ -248,9 +252,9 @@ export default function CreditHistoryPage() {
                         <div style={{ fontWeight: '700', color: 'var(--text-main)' }}>{credit.firstName} {credit.lastName}</div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>NIC: {credit.nic}</div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Mob: {credit.mobile1} {credit.mobile2 ? `/ ${credit.mobile2}` : ''}</div>
-                        {credit.customerFaceHash && (
+                        {credit.customerFaceImage && (
                           <div style={{ display: 'inline-block', marginTop: '6px', background: '#ECFDF5', color: '#065F46', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', border: '1px solid #A7F3D0' }}>
-                            👤 Face Verified
+                            👤 Face Captured
                           </div>
                         )}
                       </td>
@@ -477,42 +481,57 @@ export default function CreditHistoryPage() {
                 )}
               </div>
 
-              <h4 style={{ fontSize: '1rem', marginBottom: '12px', color: 'var(--text-main)', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>Security Verifications (Cryptographic Hashes)</h4>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>For customer privacy, raw images were destroyed. Only secure SHA-256 cryptographic hashes are retained for verification.</p>
+              <h4 style={{ fontSize: '1rem', marginBottom: '12px', color: 'var(--text-main)', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>Customer Images</h4>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ background: '#F9FAFB', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-                    <Hash size={16} style={{ marginRight: '8px', color: 'var(--text-secondary)' }} />
-                    <strong style={{ fontSize: '0.9rem' }}>Customer Face Verification</strong>
-                  </div>
-                  <div style={{ fontSize: '0.8rem', fontFamily: 'monospace', wordBreak: 'break-all', color: profileTargetCredit.customerFaceHash ? 'var(--text-main)' : 'var(--text-secondary)' }}>
-                    {profileTargetCredit.customerFaceHash || "Not Provided"}
-                  </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                <div style={{ background: '#F9FAFB', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <strong style={{ fontSize: '0.9rem', marginBottom: '8px' }}>Customer Face</strong>
+                  {profileTargetCredit.customerFaceImage ? (
+                    <img src={profileTargetCredit.customerFaceImage} onClick={() => setZoomedImage(profileTargetCredit.customerFaceImage!)} style={{ width: '100%', maxHeight: '140px', objectFit: 'cover', borderRadius: '4px', cursor: 'zoom-in', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} alt="Face" />
+                  ) : (
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Not Provided</span>
+                  )}
                 </div>
 
-                <div style={{ background: '#F9FAFB', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-                    <Hash size={16} style={{ marginRight: '8px', color: 'var(--text-secondary)' }} />
-                    <strong style={{ fontSize: '0.9rem' }}>NIC Front Hash</strong>
-                  </div>
-                  <div style={{ fontSize: '0.8rem', fontFamily: 'monospace', wordBreak: 'break-all', color: profileTargetCredit.nicFrontImageHash ? 'var(--text-main)' : 'var(--text-secondary)' }}>
-                    {profileTargetCredit.nicFrontImageHash || "Not Provided"}
-                  </div>
+                <div style={{ background: '#F9FAFB', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <strong style={{ fontSize: '0.9rem', marginBottom: '8px' }}>NIC Front</strong>
+                  {profileTargetCredit.nicFrontImage ? (
+                    <img src={profileTargetCredit.nicFrontImage} onClick={() => setZoomedImage(profileTargetCredit.nicFrontImage!)} style={{ width: '100%', maxHeight: '140px', objectFit: 'cover', borderRadius: '4px', cursor: 'zoom-in', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} alt="NIC Front" />
+                  ) : (
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Not Provided</span>
+                  )}
                 </div>
 
-                <div style={{ background: '#F9FAFB', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-                    <Hash size={16} style={{ marginRight: '8px', color: 'var(--text-secondary)' }} />
-                    <strong style={{ fontSize: '0.9rem' }}>NIC Rear Hash</strong>
-                  </div>
-                  <div style={{ fontSize: '0.8rem', fontFamily: 'monospace', wordBreak: 'break-all', color: profileTargetCredit.nicRearImageHash ? 'var(--text-main)' : 'var(--text-secondary)' }}>
-                    {profileTargetCredit.nicRearImageHash || "Not Provided"}
-                  </div>
+                <div style={{ background: '#F9FAFB', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <strong style={{ fontSize: '0.9rem', marginBottom: '8px' }}>NIC Rear</strong>
+                  {profileTargetCredit.nicRearImage ? (
+                    <img src={profileTargetCredit.nicRearImage} onClick={() => setZoomedImage(profileTargetCredit.nicRearImage!)} style={{ width: '100%', maxHeight: '140px', objectFit: 'cover', borderRadius: '4px', cursor: 'zoom-in', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} alt="NIC Rear" />
+                  ) : (
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Not Provided</span>
+                  )}
                 </div>
               </div>
 
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox / Zoom Modal */}
+      {zoomedImage && (
+        <div 
+          className="modal-overlay" 
+          onClick={() => setZoomedImage(null)} 
+          style={{ zIndex: 10000, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}
+        >
+          <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }}>
+            <button 
+              onClick={() => setZoomedImage(null)} 
+              style={{ position: 'absolute', top: '-40px', right: '-10px', background: 'transparent', color: 'white', border: 'none', fontSize: '2rem', cursor: 'pointer' }}
+            >
+              &times;
+            </button>
+            <img src={zoomedImage} alt="Zoomed" style={{ maxWidth: '100%', maxHeight: '90vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }} />
           </div>
         </div>
       )}
