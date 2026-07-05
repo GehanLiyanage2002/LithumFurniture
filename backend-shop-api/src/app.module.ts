@@ -9,6 +9,7 @@ import { CreditsModule } from './credits/credits.module';
 import { ProductsModule } from './products/products.module';
 import { CashSalesModule } from './cash-sales/cash-sales.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
+import { WorkshopStockModule } from './workshop-stock/workshop-stock.module';
 
 @Module({
   imports: [
@@ -43,6 +44,8 @@ import { SuppliersModule } from './suppliers/suppliers.module';
     CashSalesModule,
 
     SuppliersModule,
+
+    WorkshopStockModule,
   ],
   controllers: [AppController],
   providers: [AppService],

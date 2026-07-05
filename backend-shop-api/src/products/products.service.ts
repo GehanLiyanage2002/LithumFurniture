@@ -1,17 +1,24 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './product.entity';
+import { WorkshopStockService } from '../workshop-stock/workshop-stock.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private productsRepository: Repository<Product>,
+    @Inject(forwardRef(() => WorkshopStockService))
+    private workshopStockService: WorkshopStockService,
   ) {}
 
   async findAll(): Promise<Product[]> {
     return this.productsRepository.find({ order: { createdAt: 'DESC' } });
+  }
+
+  async findByName(productName: string): Promise<Product | null> {
+    return this.productsRepository.findOne({ where: { productName } });
   }
 
   async create(data: Partial<Product>): Promise<Product> {
@@ -29,6 +36,13 @@ export class ProductsService {
 
   async update(id: string, data: Partial<Product>): Promise<Product> {
     const product = await this.findOne(id);
+    
+    // Deduct from workshop stock if restocking a workshop item
+    if (data.quantity !== undefined && data.quantity > product.quantity && product.category === 'RAW') {
+      const diff = data.quantity - product.quantity;
+      await this.workshopStockService.transferByName(product.productName, diff, product.unitPrice);
+    }
+
     Object.assign(product, data);
     return this.productsRepository.save(product);
   }

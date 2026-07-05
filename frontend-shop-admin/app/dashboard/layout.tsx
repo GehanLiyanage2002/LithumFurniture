@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, PlusCircle, History, LogOut, Package, ShoppingCart, BarChart3, Truck } from "lucide-react";
+import { LayoutDashboard, PlusCircle, History, LogOut, Package, ShoppingCart, BarChart3, Truck, Wrench } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -45,7 +45,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
           <Link href="/dashboard/manage-stock" className={`nav-item ${pathname === "/dashboard/manage-stock" ? "active" : ""}`}>
             <Package size={18} style={{ marginRight: '10px' }} />
-            Manage Stock
+            Shop Stock
+          </Link>
+          <Link href="/dashboard/workshop-stock" className={`nav-item ${pathname === "/dashboard/workshop-stock" ? "active" : ""}`}>
+            <Wrench size={18} style={{ marginRight: '10px' }} />
+            Workshop Stock
           </Link>
           <Link href="/dashboard/manage-suppliers" className={`nav-item ${pathname === "/dashboard/manage-suppliers" ? "active" : ""}`}>
             <Truck size={18} style={{ marginRight: '10px' }} />
