@@ -32,6 +32,10 @@ export class CreateCreditDto {
   @IsNumber()
   productPrice: number;
 
+  @IsOptional()
+  @IsNumber()
+  discount?: number;
+
   @IsNumber()
   downPayment: number;
 

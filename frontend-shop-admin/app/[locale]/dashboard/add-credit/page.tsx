@@ -23,11 +23,15 @@ export default function AddCreditPage() {
   const [months, setMonths] = useState("1");
   const [interestRate, setInterestRate] = useState(0);
 
+  const [discountType, setDiscountType] = useState("NONE");
+  const [discountValue, setDiscountValue] = useState("");
+
   const [nicFront, setNicFront] = useState<string | null>(null);
   const [nicRear, setNicRear] = useState<string | null>(null);
   const [customerFaceImage, setCustomerFaceImage] = useState<string | null>(null);
   
   const [cameraActive, setCameraActive] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
@@ -65,10 +69,24 @@ export default function AddCreditPage() {
     else if (m >= 7) setInterestRate(35);
   }, [months]);
 
+  const calculateDiscountAmount = () => {
+    const price = parseFloat(productPrice) || 0;
+    const dVal = parseFloat(discountValue) || 0;
+    if (discountType === "FIXED") {
+      return dVal;
+    } else if (discountType === "PERCENTAGE") {
+      return price * (dVal / 100);
+    }
+    return 0;
+  };
+
   const calculateTotal = () => {
     const price = parseFloat(productPrice) || 0;
+    const discount = calculateDiscountAmount();
+    const finalPrice = Math.max(0, price - discount);
+    
     const down = parseFloat(downPayment) || 0;
-    const payable = price - down;
+    const payable = finalPrice - down;
     if (payable <= 0) return 0;
     const interest = payable * (interestRate / 100);
     return payable + interest;
@@ -91,6 +109,7 @@ export default function AddCreditPage() {
   };
 
   const startCamera = async () => {
+    setShowCameraModal(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       setCameraActive(true);
@@ -103,7 +122,13 @@ export default function AddCreditPage() {
       }, 100);
     } catch (err) {
       alert("Camera access denied or unavailable.");
+      setShowCameraModal(false);
     }
+  };
+
+  const closeCameraModal = () => {
+    stopCamera();
+    setShowCameraModal(false);
   };
 
   const stopCamera = () => {
@@ -116,9 +141,10 @@ export default function AddCreditPage() {
   const captureFace = () => {
     if (videoRef.current && canvasRef.current) {
       const context = canvasRef.current.getContext("2d");
-      context?.drawImage(videoRef.current, 0, 0, 320, 240);
+      context?.drawImage(videoRef.current, 0, 0, 640, 480);
       setCustomerFaceImage(canvasRef.current.toDataURL("image/jpeg"));
       stopCamera();
+      setShowCameraModal(false);
     }
   };
 
@@ -154,6 +180,7 @@ export default function AddCreditPage() {
           mobile2, 
           productName,
           productPrice: parseFloat(productPrice) || 0,
+          discount: calculateDiscountAmount(),
           downPayment: parseFloat(downPayment) || 0,
           interestRate,
           months: parseInt(months, 10),
@@ -189,17 +216,94 @@ export default function AddCreditPage() {
     iframe.contentWindow?.document.write(`
       <html>
         <head>
-          <title>Credit Receipt - ${receiptData.id}</title>
+          <title>Credit Agreement - ${receiptData.id}</title>
           <style>
-            body { font-family: 'Inter', sans-serif, Arial; margin: 0; padding: 20px; font-size: 14px; color: #000; }
-            h2 { margin: 0 0 8px 0; font-size: 1.5rem; font-weight: 800; text-align: center; }
-            p { margin: 0 0 4px 0; font-size: 0.85rem; text-align: center; color: #555; }
-            .details-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; color: #333; }
-            .divider { border-top: 1px dashed #ccc; margin: 16px 0; }
+            @media print { 
+              @page { margin: 15mm; size: A4 portrait; }
+              body { margin: 0; padding: 0; }
+            }
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0 auto; padding: 40px; font-size: 14px; color: #333; max-width: 800px; background: #fff; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; }
+            .company-name { font-size: 2.2rem; font-weight: 900; color: #2563eb; margin: 0 0 8px 0; letter-spacing: -0.5px; }
+            .company-details { font-size: 0.9rem; color: #555; line-height: 1.5; }
+            .receipt-title { text-align: right; }
+            .receipt-title h1 { font-size: 1.8rem; color: #333; margin: 0 0 8px 0; text-transform: uppercase; font-weight: 300; letter-spacing: 1px; }
+            .meta-info { font-size: 0.95rem; color: #555; line-height: 1.6; }
+            
+            .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+            .box { border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; background-color: #f9fafb; }
+            .box-title { font-size: 1.1rem; font-weight: bold; color: #111; border-bottom: 1px solid #d1d5db; padding-bottom: 8px; margin-bottom: 12px; margin-top: 0; }
+            .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; }
+            .info-row span:first-child { color: #4b5563; }
+            .info-row span:last-child { font-weight: 600; color: #111; }
+            
+            .financials { border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 40px; }
+            .fin-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 1rem; color: #333; border-bottom: 1px dashed #e5e7eb; }
+            .fin-row:last-child { border-bottom: none; }
+            .fin-row.highlight { font-size: 1.2rem; font-weight: bold; color: #2563eb; border-top: 2px solid #2563eb; padding-top: 12px; margin-top: 8px; border-bottom: none; }
+            
+            .footer { margin-top: 50px; text-align: center; font-size: 0.95rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+            .signatures { display: flex; justify-content: space-between; margin-top: 60px; padding: 0 40px; }
+            .sig-line { width: 220px; border-top: 1px solid #111; text-align: center; padding-top: 8px; font-weight: 600; color: #111; }
           </style>
         </head>
         <body>
-          ${printContent.innerHTML}
+          <div class="header">
+            <div>
+              <h2 class="company-name">LITHUM FURNITURES</h2>
+              <div class="company-details">
+                No.76, Badulla Road, Ettampitiya.<br>
+                Tel: 077 183 0883<br>
+                B.R. No. U/A 569 | V.A.T. No. T.D. 430/B
+              </div>
+            </div>
+            <div class="receipt-title">
+              <h1>CREDIT AGREEMENT</h1>
+              <div class="meta-info">
+                <strong>Agreement ID:</strong> ${receiptData.id.substring(0, 8).toUpperCase()}<br>
+                <strong>Date:</strong> ${receiptData.date.split(',')[0]}<br>
+                <strong>Time:</strong> ${receiptData.date.split(',')[1]}
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="box">
+              <h3 class="box-title">Customer Details</h3>
+              <div class="info-row"><span>Name:</span> <span>${receiptData.firstName} ${receiptData.lastName}</span></div>
+              <div class="info-row"><span>NIC:</span> <span>${receiptData.nic}</span></div>
+              <div class="info-row"><span>Contact 1:</span> <span>${receiptData.mobile1}</span></div>
+              ${receiptData.mobile2 ? `<div class="info-row"><span>Contact 2:</span> <span>${receiptData.mobile2}</span></div>` : ''}
+              ${receiptData.billNo ? `<div class="info-row"><span>Bill No:</span> <span>${receiptData.billNo}</span></div>` : ''}
+            </div>
+            <div class="box">
+              <h3 class="box-title">Product Details</h3>
+              <div class="info-row"><span>Item:</span> <span>${receiptData.productName}</span></div>
+              <div class="info-row"><span>Product Price:</span> <span>LKR ${Number(receiptData.productPrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</span></div>
+              ${receiptData.discount > 0 ? `<div class="info-row" style="color: #059669;"><span>Discount:</span> <span>- LKR ${Number(receiptData.discount).toLocaleString('en-US', {minimumFractionDigits: 2})}</span></div>` : ''}
+              <div class="info-row" style="color: #059669;"><span>Down Payment Paid:</span> <span>LKR ${Number(receiptData.downPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</span></div>
+            </div>
+          </div>
+
+          <div class="financials">
+            <h3 class="box-title">Credit Plan Summary</h3>
+            <div class="fin-row"><span>Total Loan Amount (Payable)</span> <span>LKR ${Number(receiptData.totalPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</span></div>
+            <div class="fin-row"><span>Duration</span> <span>${receiptData.months} Months</span></div>
+            <div class="fin-row highlight">
+              <span>Monthly Installment</span>
+              <span>LKR ${Number(receiptData.monthlyInstallment).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+            </div>
+          </div>
+
+          <div class="signatures">
+            <div class="sig-line">Customer Signature</div>
+            <div class="sig-line">Authorized Signatory</div>
+          </div>
+
+          <div class="footer">
+            <p><strong>THANK YOU FOR YOUR BUSINESS!</strong></p>
+            <p>Please retain this agreement for your records. Installments must be paid before the due date each month.</p>
+          </div>
         </body>
       </html>
     `);
@@ -240,6 +344,8 @@ export default function AddCreditPage() {
     setProductPrice(""); 
     setDownPayment(""); 
     setMonths("1");
+    setDiscountType("NONE");
+    setDiscountValue("");
     setNicFront(null); 
     setNicRear(null); 
     setCustomerFaceImage(null); 
@@ -338,6 +444,30 @@ export default function AddCreditPage() {
             </div>
           </div>
 
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', background: '#F9FAFB', padding: '16px', borderRadius: '12px', border: '1px dashed var(--border)', marginTop: '8px' }}>
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label>{t('discount_type') || 'Discount Type'}</label>
+              <select className="input-field" value={discountType} onChange={e => { setDiscountType(e.target.value); setDiscountValue(""); }}>
+                <option value="NONE">{t('no_discount') || 'No Discount'}</option>
+                <option value="FIXED">{t('fixed_amount') || 'Fixed Amount'}</option>
+                <option value="PERCENTAGE">{t('percentage') || 'Percentage'}</option>
+              </select>
+            </div>
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label>{t('discount_value') || 'Discount Value'} {discountType === 'NONE' ? '' : (discountType === 'FIXED' ? '(LKR)' : '(%)')}</label>
+              <input 
+                type="number" 
+                min="0" 
+                step="0.01" 
+                className="input-field" 
+                value={discountValue} 
+                onChange={e => setDiscountValue(e.target.value)} 
+                disabled={discountType === 'NONE'} 
+                placeholder={discountType === 'NONE' ? "N/A" : "0"}
+              />
+            </div>
+          </div>
+
           {/* Payment Summary moved to right sidebar */}
 
           <div style={{ marginTop: '8px' }}>
@@ -374,18 +504,13 @@ export default function AddCreditPage() {
                     <img src={customerFaceImage} alt="Face" style={{ width: '100%', height: '110px', objectFit: 'cover', borderRadius: '8px' }} />
                     <button type="button" onClick={() => setCustomerFaceImage(null)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: 'var(--error)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}><X size={14} /></button>
                   </div>
-                ) : cameraActive ? (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', background: '#000', marginBottom: '8px' }}></video>
-                    <button type="button" onClick={captureFace} className="btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem', width: '100%' }}>{t('capture')}</button>
-                  </div>
                 ) : (
                   <button type="button" onClick={startCamera} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%', justifyContent: 'center' }}>
                     <Camera size={28} style={{ marginBottom: '12px', color: 'var(--text-secondary)' }} />
                     <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '500' }}>{t('live_camera')}</span>
                   </button>
                 )}
-                <canvas ref={canvasRef} width="320" height="240" style={{ display: 'none' }}></canvas>
+                <canvas ref={canvasRef} width="640" height="480" style={{ display: 'none' }}></canvas>
               </div>
             </div>
           </div>
@@ -415,6 +540,12 @@ export default function AddCreditPage() {
               <span style={{ color: '#444', fontWeight: 500 }}>{t('product_price')}:</span>
               <strong>LKR {(parseFloat(productPrice) || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
             </div>
+            {discountType !== 'NONE' && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', color: 'var(--success)' }}>
+                <span>{t('discount_applied') || 'Discount'}:</span>
+                <strong>- LKR {calculateDiscountAmount().toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+              </div>
+            )}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
               <span style={{ color: '#444', fontWeight: 500 }}>{t('down_payment')}:</span>
               <strong>- LKR {(parseFloat(downPayment) || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
@@ -453,80 +584,42 @@ export default function AddCreditPage() {
           <div className="modal-content" style={{ maxWidth: '450px', background: '#fff' }}>
             
             <div id="credit-receipt-content">
-              <div style={{ padding: '32px', textAlign: 'center', borderBottom: '2px dashed #ccc' }}>
-                <h2 style={{ margin: '0 0 8px 0', color: '#000', fontSize: '1.5rem', fontWeight: '800' }}>LITHUM FURNITURE</h2>
-                <p style={{ margin: '0 0 4px 0', color: '#555', fontSize: '0.85rem', textAlign: 'center' }}>123 Main Street, Colombo</p>
-                <p style={{ margin: '0 0 16px 0', color: '#555', fontSize: '0.85rem', textAlign: 'center' }}>Tel: 011-2345678</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#333' }}>
-                  <span>Date: {receiptData.date.split(',')[0]}</span>
-                  <span>Time: {receiptData.date.split(',')[1]}</span>
-                </div>
-                <div style={{ textAlign: 'left', marginTop: '8px', fontSize: '0.85rem', color: '#333' }}>
-                  <span>Credit ID: {receiptData.id.substring(0, 8).toUpperCase()}</span>
-                </div>
-              </div>
-
-              <div style={{ padding: '24px 32px' }}>
-                <h4 style={{ margin: '0 0 12px 0', color: '#000', fontSize: '1rem', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>Customer Details</h4>
-                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                  <span>Name:</span>
-                  <strong>{receiptData.firstName} {receiptData.lastName}</strong>
-                </div>
-                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                  <span>NIC:</span>
-                  <span>{receiptData.nic}</span>
-                </div>
-                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                  <span>Contact:</span>
-                  <span>{receiptData.mobile1}</span>
-                </div>
-                {receiptData.billNo && (
-                  <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                    <span>Bill No:</span>
-                    <span>{receiptData.billNo}</span>
-                  </div>
-                )}
-
-                <h4 style={{ margin: '24px 0 12px 0', color: '#000', fontSize: '1rem', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>Credit Plan</h4>
-                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                  <span>Product:</span>
-                  <strong>{receiptData.productName}</strong>
-                </div>
-                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                  <span>Product Price:</span>
-                  <span>LKR {Number(receiptData.productPrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                </div>
-                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                  <span>Down Payment (Paid):</span>
-                  <strong style={{ color: '#059669' }}>LKR {Number(receiptData.downPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
-                </div>
-                
-                <div className="divider" style={{ borderTop: '1px dashed #ccc', margin: '16px 0' }}></div>
-                
-                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                  <span>Loan Amount:</span>
-                  <span>LKR {Number(receiptData.totalPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                </div>
-                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                  <span>Duration:</span>
-                  <span>{receiptData.months} Months</span>
-                </div>
-                <div className="details-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '1.1rem', color: '#000', fontWeight: 'bold' }}>
-                  <span>Monthly Installment:</span>
-                  <span>LKR {Number(receiptData.monthlyInstallment).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                </div>
-              </div>
-
-              <div style={{ padding: '0 32px 32px', textAlign: 'center' }}>
-                <p style={{ margin: '0 0 4px 0', color: '#000', fontWeight: 'bold', textAlign: 'center' }}>THANK YOU!</p>
-                <p style={{ margin: 0, color: '#666', fontSize: '0.85rem', textAlign: 'center' }}>Please retain this receipt for your records.</p>
-              </div>
+              {/* Receipt Content Hidden in Modal via CSS/Render logic */}
             </div>
 
             <div style={{ padding: '16px', background: '#F9FAFB', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', gap: '16px', borderRadius: '0 0 12px 12px' }}>
               <button className="btn-outline" onClick={closeReceipt}>{t('close_view_history')}</button>
               <button className="btn-primary" onClick={printReceipt} style={{ display: 'inline-flex', alignItems: 'center' }}>
                 <Printer size={18} style={{ marginRight: '8px' }} /> {t('print_agreement')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Camera Modal */}
+      {showCameraModal && (
+        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={(e) => { if (e.target === e.currentTarget) closeCameraModal(); }}>
+          <div className="modal-content" style={{ maxWidth: '640px', width: '100%', background: '#fff', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', borderRadius: '16px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-main)' }}>Capture Customer Image</h3>
+              <button type="button" onClick={closeCameraModal} style={{ background: '#f3f4f6', border: 'none', cursor: 'pointer', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4b5563' }}><X size={18} /></button>
+            </div>
+            
+            <div style={{ width: '100%', backgroundColor: '#000', borderRadius: '12px', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px', position: 'relative' }}>
+              {cameraActive ? (
+                <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '400px', objectFit: 'cover' }}></video>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ color: '#fff', fontSize: '0.9rem' }}>Initializing camera...</span>
+                </div>
+              )}
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '8px' }}>
+              <button type="button" className="btn-outline" onClick={closeCameraModal} style={{ padding: '10px 24px' }}>Cancel</button>
+              <button type="button" className="btn-primary" onClick={captureFace} disabled={!cameraActive} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}>
+                <Camera size={18} /> {t('capture')}
               </button>
             </div>
           </div>

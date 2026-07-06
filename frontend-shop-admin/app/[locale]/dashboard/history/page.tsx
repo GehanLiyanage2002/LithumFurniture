@@ -25,6 +25,7 @@ interface Credit {
   paymentsMade: number;
   createdAt: string;
   status: string;
+  discount?: number;
   billNo?: string;
 }
 
@@ -272,6 +273,9 @@ export default function CreditHistoryPage() {
                       </td>
                       <td style={{ padding: '16px', verticalAlign: 'top' }}>
                         <div style={{ fontSize: '0.85rem' }}>{t('total')} {Number(credit.totalPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                        {credit.discount && credit.discount > 0 ? (
+                          <div style={{ fontSize: '0.85rem', color: 'var(--success)' }}>Discount: -LKR {Number(credit.discount).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                        ) : null}
                         <div style={{ fontSize: '0.85rem', color: 'var(--success)' }}>{t('paid')} {Number(credit.paidAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
                         <div style={{ fontWeight: '700', color: 'var(--error)' }}>
                           {t('due')} {Math.max(0, Number(credit.totalPayment) - Number(credit.paidAmount || 0)).toLocaleString('en-US', {minimumFractionDigits: 2})}

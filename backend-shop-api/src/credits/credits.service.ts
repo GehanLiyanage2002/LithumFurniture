@@ -46,7 +46,7 @@ export class CreditsService {
     else if (actualMonths === 6) newInterestRate = 25;
     else if (actualMonths >= 7) newInterestRate = 35;
 
-    const payable = Number(credit.productPrice) - Number(credit.downPayment);
+    const payable = Number(credit.productPrice) - Number(credit.discount || 0) - Number(credit.downPayment);
     const newTotalPayment = payable + (payable * newInterestRate / 100);
 
     const remainingToPay = newTotalPayment - Number(credit.paidAmount || 0);

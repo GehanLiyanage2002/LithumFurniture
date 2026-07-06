@@ -29,7 +29,9 @@
     "vs_last_month": "vs last month",
     "due_this_week": "due this week",
     "new": "new",
-    "active": "Active"
+    "active": "Active",
+    "recently": "Recently",
+    "no_recent_activity": "No recent activity found."
   },
   "Sidebar": {
     "dashboard": "Dashboard Home",
@@ -102,7 +104,13 @@
     "guide_3": "Minimum down payment is usually 20% of product price.",
     "guide_4": "Double-check the primary mobile number for SMS alerts.",
     "close_view_history": "Close & View History",
-    "print_agreement": "Print Agreement"
+    "print_agreement": "Print Agreement",
+    "discount_type": "Discount Type",
+    "no_discount": "No Discount",
+    "fixed_amount": "Fixed Amount (LKR)",
+    "percentage": "Percentage (%)",
+    "discount_value": "Discount Value",
+    "discount_applied": "Discount Applied"
   },
   "ManageStock": {
     "title": "Manage Stock",

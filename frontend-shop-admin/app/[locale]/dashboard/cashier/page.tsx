@@ -170,23 +170,88 @@ export default function CashierPage() {
         <head>
           <title>Receipt - ${receiptData.receiptId}</title>
           <style>
-            body { font-family: 'Inter', sans-serif, Arial; margin: 0; padding: 20px; font-size: 14px; color: #000; }
-            .text-center { text-align: center; }
-            .fw-bold { font-weight: bold; }
-            .d-flex { display: flex; justify-content: space-between; }
-            .col-2 { flex: 2; }
-            .col-1 { flex: 1; text-align: center; }
-            .col-right { flex: 1; text-align: right; }
-            .border-bottom { border-bottom: 1px solid #ccc; padding-bottom: 8px; margin-bottom: 16px; }
-            .border-top { border-top: 2px solid #ccc; padding-top: 16px; margin-top: 8px; }
-            h2 { margin: 0 0 8px 0; font-size: 1.5rem; font-weight: 800; }
-            p { margin: 0 0 4px 0; font-size: 0.85rem; color: #555; }
-            .small-text { font-size: 0.85rem; color: #333; }
-            .muted { color: #666; }
+            @media print { 
+              @page { margin: 15mm; size: A4 portrait; }
+              body { margin: 0; padding: 0; }
+            }
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0 auto; padding: 40px; font-size: 14px; color: #333; max-width: 800px; background: #fff; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #059669; padding-bottom: 20px; margin-bottom: 30px; }
+            .company-name { font-size: 2.2rem; font-weight: 900; color: #059669; margin: 0 0 8px 0; letter-spacing: -0.5px; }
+            .company-details { font-size: 0.9rem; color: #555; line-height: 1.5; }
+            .receipt-title { text-align: right; }
+            .receipt-title h1 { font-size: 2rem; color: #333; margin: 0 0 8px 0; text-transform: uppercase; font-weight: 300; letter-spacing: 2px; }
+            .meta-info { font-size: 0.95rem; color: #555; line-height: 1.6; }
+            
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            th { background-color: #f3f4f6; color: #374151; font-weight: 600; text-align: left; padding: 12px 16px; border-bottom: 2px solid #d1d5db; }
+            th.right, td.right { text-align: right; }
+            th.center, td.center { text-align: center; }
+            td { padding: 16px; border-bottom: 1px solid #e5e7eb; color: #111; }
+            
+            .summary { width: 45%; margin-left: auto; }
+            .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 1rem; color: #333; }
+            .summary-row.discount { color: #dc2626; }
+            .summary-row.total { font-size: 1.4rem; font-weight: bold; color: #059669; border-top: 2px solid #059669; padding-top: 12px; margin-top: 4px; }
+            
+            .footer { margin-top: 50px; text-align: center; font-size: 0.95rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+            .footer p { margin: 4px 0; }
           </style>
         </head>
         <body>
-          ${printContent.innerHTML}
+          <div class="header">
+            <div>
+              <h2 class="company-name">LITHUM FURNITURES</h2>
+              <div class="company-details">
+                No.76, Badulla Road, Ettampitiya.<br>
+                Tel: 077 183 0883<br>
+                B.R. No. U/A 569 | V.A.T. No. T.D. 430/B
+              </div>
+            </div>
+            <div class="receipt-title">
+              <h1>CASH RECEIPT</h1>
+              <div class="meta-info">
+                <strong>Receipt #:</strong> ${receiptData.receiptId.substring(0, 8).toUpperCase()}<br>
+                <strong>Date:</strong> ${receiptData.date.split(',')[0]}<br>
+                <strong>Time:</strong> ${receiptData.date.split(',')[1]}
+              </div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Item Description</th>
+                <th class="center">Qty</th>
+                <th class="right">Unit Price (LKR)</th>
+                <th class="right">Amount (LKR)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>${receiptData.productName}</strong></td>
+                <td class="center">${receiptData.quantity}</td>
+                <td class="right">${Number(receiptData.unitPrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                <td class="right">${(Number(receiptData.unitPrice) * receiptData.quantity).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="summary">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>${(Number(receiptData.unitPrice) * receiptData.quantity).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+            </div>
+            ${receiptData.discountValue > 0 ? `<div class="summary-row discount"><span>Discount</span><span>- ${Number(receiptData.discountValue).toLocaleString('en-US', {minimumFractionDigits: 2})}</span></div>` : ''}
+            <div class="summary-row total">
+              <span>TOTAL</span>
+              <span>LKR ${Number(receiptData.totalPrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p><strong>THANK YOU FOR YOUR BUSINESS!</strong></p>
+            <p>Items can be exchanged within 7 days with the original receipt.</p>
+          </div>
         </body>
       </html>
     `);
@@ -338,54 +403,7 @@ export default function CashierPage() {
           <div className="modal-content" style={{ maxWidth: '400px', background: '#fff' }}>
             
             <div id="receipt-content">
-              <div style={{ padding: '32px', textAlign: 'center', borderBottom: '2px dashed #ccc' }}>
-                <h2 style={{ margin: '0 0 8px 0', color: '#000', fontSize: '1.5rem', fontWeight: '800' }}>LITHUM FURNITURE</h2>
-                <p style={{ margin: '0 0 4px 0', color: '#555', fontSize: '0.85rem' }}>123 Main Street, Colombo</p>
-                <p style={{ margin: '0 0 16px 0', color: '#555', fontSize: '0.85rem' }}>Tel: 011-2345678</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#333' }}>
-                  <span>Date: {receiptData.date.split(',')[0]}</span>
-                  <span>Time: {receiptData.date.split(',')[1]}</span>
-                </div>
-                <div style={{ textAlign: 'left', marginTop: '8px', fontSize: '0.85rem', color: '#333' }}>
-                  <span>Receipt #: {receiptData.receiptId.substring(0, 8).toUpperCase()}</span>
-                </div>
-              </div>
-
-              <div style={{ padding: '24px 32px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderBottom: '1px solid #eee', paddingBottom: '8px', marginBottom: '16px' }}>
-                  <span style={{ flex: 2, color: '#000' }}>Item</span>
-                  <span style={{ flex: 1, textAlign: 'center', color: '#000' }}>Qty</span>
-                  <span style={{ flex: 1, textAlign: 'right', color: '#000' }}>Amount</span>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '0.9rem', color: '#333' }}>
-                  <span style={{ flex: 2 }}>{receiptData.productName} <br/><small style={{color: '#666'}}>@ {receiptData.unitPrice.toLocaleString()}</small></span>
-                  <span style={{ flex: 1, textAlign: 'center' }}>{receiptData.quantity}</span>
-                  <span style={{ flex: 1, textAlign: 'right' }}>{(receiptData.unitPrice * receiptData.quantity).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                </div>
-
-                <div style={{ borderTop: '2px solid #ccc', paddingTop: '16px', marginTop: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                    <span>Subtotal</span>
-                    <span>{(receiptData.unitPrice * receiptData.quantity).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                  </div>
-                  {receiptData.discountValue > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#333' }}>
-                      <span>Discount</span>
-                      <span>- {receiptData.discountValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '1.2rem', fontWeight: 'bold', color: '#000' }}>
-                    <span>TOTAL</span>
-                    <span>LKR {receiptData.totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ padding: '16px 32px 32px', textAlign: 'center' }}>
-                <p style={{ margin: '0 0 4px 0', color: '#000', fontWeight: 'bold' }}>THANK YOU FOR SHOPPING!</p>
-                <p style={{ margin: 0, color: '#666', fontSize: '0.85rem' }}>Items can be exchanged within 7 days.</p>
-              </div>
+              {/* Receipt Content Hidden in Modal via CSS/Render logic */}
             </div>
 
             <div style={{ padding: '16px', background: '#F9FAFB', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', gap: '16px', borderRadius: '0 0 12px 12px' }}>

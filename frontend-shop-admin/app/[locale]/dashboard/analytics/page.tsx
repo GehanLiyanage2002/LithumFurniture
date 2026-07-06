@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { TrendingUp, Calendar, DollarSign, Package, BarChart3 } from "lucide-react";
+import { TrendingUp, Calendar, DollarSign, Package, BarChart3, Printer } from "lucide-react";
 
 interface CashSale {
   id: string;
@@ -112,9 +112,116 @@ export default function AnalyticsPage() {
   const totalOverallEarnings = totalPosSales + totalCreditEarnings;
   const totalStockItems = products.reduce((acc, p) => acc + Number(p.quantity), 0);
 
-  // Pagination logic
   const totalPages = Math.ceil(sales.length / itemsPerPage);
   const currentSales = sales.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const printReceipt = (sale: CashSale) => {
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+    
+    iframe.contentWindow?.document.write(`
+      <html>
+        <head>
+          <title>Receipt - ${sale.id}</title>
+          <style>
+            @media print { 
+              @page { margin: 15mm; size: A4 portrait; }
+              body { margin: 0; padding: 0; }
+            }
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0 auto; padding: 40px; font-size: 14px; color: #333; max-width: 800px; background: #fff; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #059669; padding-bottom: 20px; margin-bottom: 30px; }
+            .company-name { font-size: 2.2rem; font-weight: 900; color: #059669; margin: 0 0 8px 0; letter-spacing: -0.5px; }
+            .company-details { font-size: 0.9rem; color: #555; line-height: 1.5; }
+            .receipt-title { text-align: right; }
+            .receipt-title h1 { font-size: 2rem; color: #333; margin: 0 0 8px 0; text-transform: uppercase; font-weight: 300; letter-spacing: 2px; }
+            .meta-info { font-size: 0.95rem; color: #555; line-height: 1.6; }
+            
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            th { background-color: #f3f4f6; color: #374151; font-weight: 600; text-align: left; padding: 12px 16px; border-bottom: 2px solid #d1d5db; }
+            th.right, td.right { text-align: right; }
+            th.center, td.center { text-align: center; }
+            td { padding: 16px; border-bottom: 1px solid #e5e7eb; color: #111; }
+            
+            .summary { width: 45%; margin-left: auto; }
+            .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 1rem; color: #333; }
+            .summary-row.discount { color: #dc2626; }
+            .summary-row.total { font-size: 1.4rem; font-weight: bold; color: #059669; border-top: 2px solid #059669; padding-top: 12px; margin-top: 4px; }
+            
+            .footer { margin-top: 50px; text-align: center; font-size: 0.95rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+            .footer p { margin: 4px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h2 class="company-name">LITHUM FURNITURES</h2>
+              <div class="company-details">
+                No.76, Badulla Road, Ettampitiya.<br>
+                Tel: 077 183 0883<br>
+                B.R. No. U/A 569 | V.A.T. No. T.D. 430/B
+              </div>
+            </div>
+            <div class="receipt-title">
+              <h1>CASH RECEIPT</h1>
+              <div class="meta-info">
+                <strong>Receipt #:</strong> ${sale.id.substring(0, 8).toUpperCase()}<br>
+                <strong>Date:</strong> ${new Date(sale.createdAt).toLocaleDateString()}<br>
+                <strong>Time:</strong> ${new Date(sale.createdAt).toLocaleTimeString()}
+              </div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Item Description</th>
+                <th class="center">Qty</th>
+                <th class="right">Unit Price (LKR)</th>
+                <th class="right">Amount (LKR)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>${sale.productName}</strong></td>
+                <td class="center">${sale.quantity}</td>
+                <td class="right">${Number(sale.unitPrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                <td class="right">${(Number(sale.unitPrice) * sale.quantity).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="summary">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>${(Number(sale.unitPrice) * sale.quantity).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+            </div>
+            ${sale.discountValue > 0 ? `
+            <div class="summary-row discount">
+              <span>Discount</span>
+              <span>- ${Number(sale.discountValue).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+            </div>` : ''}
+            <div class="summary-row total">
+              <span>TOTAL</span>
+              <span>LKR ${Number(sale.totalPrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p><strong>THANK YOU FOR YOUR BUSINESS!</strong></p>
+            <p>Items can be exchanged within 7 days with the original receipt.</p>
+          </div>
+        </body>
+      </html>
+    `);
+    
+    iframe.contentWindow?.document.close();
+    iframe.contentWindow?.focus();
+    setTimeout(() => {
+      iframe.contentWindow?.print();
+      document.body.removeChild(iframe);
+    }, 250);
+  };
 
   return (
     <div>
@@ -197,6 +304,7 @@ export default function AnalyticsPage() {
                       <th style={{ padding: '12px 16px' }}>{t('table_discount')}</th>
                       <th style={{ padding: '12px 16px' }}>{t('table_total_paid')}</th>
                       <th style={{ padding: '12px 16px', textAlign: 'right' }}>{t('table_profit')}</th>
+                      <th style={{ padding: '12px 16px', textAlign: 'center' }}></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -218,6 +326,11 @@ export default function AnalyticsPage() {
                           </td>
                           <td style={{ padding: '16px', textAlign: 'right', fontWeight: 'bold', color: profit >= 0 ? 'var(--success)' : 'var(--error)' }}>
                             {profit >= 0 ? '+' : ''}{profit.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                          </td>
+                          <td style={{ padding: '16px', textAlign: 'center' }}>
+                            <button className="btn-outline" onClick={() => printReceipt(sale)} style={{ padding: '6px 10px', fontSize: '0.85rem' }}>
+                              <Printer size={16} />
+                            </button>
                           </td>
                         </tr>
                       );
