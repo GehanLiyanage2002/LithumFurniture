@@ -193,6 +193,14 @@ export default function AddCreditPage() {
       });
       if (!res.ok) throw new Error("Failed to create credit record.");
       const savedCredit = await res.json();
+      
+      await Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Credit record created and SMS sent successfully!',
+        confirmButtonColor: '#059669'
+      });
+
       setMessage("Credit record created successfully!");
       setReceiptData({
         ...savedCredit,
@@ -583,8 +591,41 @@ export default function AddCreditPage() {
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeReceipt(); }}>
           <div className="modal-content" style={{ maxWidth: '450px', background: '#fff' }}>
             
-            <div id="credit-receipt-content">
-              {/* Receipt Content Hidden in Modal via CSS/Render logic */}
+            <div id="credit-receipt-content" style={{ padding: '24px', maxHeight: '60vh', overflowY: 'auto' }}>
+              <div style={{ textAlign: 'center', marginBottom: '20px', borderBottom: '2px solid #2563eb', paddingBottom: '16px' }}>
+                <h2 style={{ margin: '0 0 8px 0', color: '#2563eb', fontSize: '1.5rem', fontWeight: 800 }}>LITHUM FURNITURES</h2>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#6b7280' }}>CREDIT AGREEMENT</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.95rem' }}>
+                <div style={{ background: '#f9fafb', padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                  <p style={{ margin: '0 0 4px 0' }}><strong>Customer:</strong> {receiptData.firstName} {receiptData.lastName}</p>
+                  <p style={{ margin: '0 0 4px 0' }}><strong>NIC:</strong> {receiptData.nic}</p>
+                  <p style={{ margin: '0 0 4px 0' }}><strong>Product:</strong> {receiptData.productName}</p>
+                  <p style={{ margin: '0' }}><strong>Contact:</strong> {receiptData.mobile1}</p>
+                </div>
+                <div style={{ background: '#f9fafb', padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ color: '#4b5563' }}>Product Price:</span>
+                    <span style={{ fontWeight: 600 }}>LKR {Number(receiptData.productPrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ color: '#4b5563' }}>Down Payment:</span>
+                    <span style={{ fontWeight: 600, color: '#059669' }}>LKR {Number(receiptData.downPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', borderTop: '1px dashed #d1d5db', paddingTop: '8px' }}>
+                    <span style={{ color: '#4b5563' }}>Total Payable:</span>
+                    <span style={{ fontWeight: 600 }}>LKR {Number(receiptData.totalPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ color: '#4b5563' }}>Duration:</span>
+                    <span style={{ fontWeight: 600 }}>{receiptData.months} Months</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', padding: '12px', background: '#eff6ff', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
+                    <span style={{ fontWeight: 600, color: '#1e3a8a' }}>Monthly Installment:</span>
+                    <span style={{ fontWeight: 700, color: '#1d4ed8', fontSize: '1.1rem' }}>LKR {Number(receiptData.monthlyInstallment).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div style={{ padding: '16px', background: '#F9FAFB', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', gap: '16px', borderRadius: '0 0 12px 12px' }}>

@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { Repository } from 'typeorm';
 import { Credit } from './credit.entity';
 import { Payment } from './payment.entity';
@@ -14,6 +16,7 @@ export class CreditsService {
     @InjectRepository(Payment)
     private paymentRepository: Repository<Payment>,
     private productsService: ProductsService,
+    private configService: ConfigService,
   ) {}
 
   async create(createCreditDto: CreateCreditDto): Promise<Credit> {
@@ -23,6 +26,19 @@ export class CreditsService {
     // Decrease stock for raw furniture
     if (createCreditDto.productName) {
       await this.productsService.decreaseStockByName(createCreditDto.productName);
+    }
+    
+    // Send welcome and reminder info SMS
+    const phone = saved.mobile1 || saved.mobile2;
+    if (phone) {
+      const message = `Hi ${saved.firstName},
+
+Thank you for purchasing ${saved.productName} from Lithum Furniture!
+
+Your monthly installment is Rs. ${saved.monthlyInstallment}. We will send you a reminder on this date every month.
+
+Have a great day!`;
+      await this.sendSms(phone, message);
     }
     
     return saved;
@@ -102,5 +118,64 @@ export class CreditsService {
       where: { creditId },
       order: { createdAt: 'DESC' },
     });
+  }
+
+  @Cron('0 9 * * *') // Runs every day at 9:00 AM
+  async handleMonthlyInstallmentReminders() {
+    const activeCredits = await this.creditsRepository.find({
+      where: { status: 'ACTIVE' },
+    });
+
+    const today = new Date();
+    const currentDay = today.getDate();
+
+    for (const credit of activeCredits) {
+      const purchaseDate = new Date(credit.createdAt);
+      
+      // Check if it's the exact day of the month as the purchase date
+      // Also ensure we don't send it on the very first day of purchase
+      if (
+        purchaseDate.getDate() === currentDay &&
+        (today.getMonth() !== purchaseDate.getMonth() || today.getFullYear() !== purchaseDate.getFullYear())
+      ) {
+        const message = `Dear ${credit.firstName}, your monthly installment of Rs. ${credit.monthlyInstallment} is due today for ${credit.productName}. Please pay ASAP.`;
+        const phone = credit.mobile1 || credit.mobile2;
+        
+        if (phone) {
+          const message = `Hi ${credit.firstName},
+
+A friendly reminder from Lithum Furniture!
+
+Your monthly installment of Rs. ${credit.monthlyInstallment} for ${credit.productName} is due today.
+
+Please make the payment ASAP. Thank you!`;
+          await this.sendSms(phone, message);
+        }
+      }
+    }
+  }
+
+  private async sendSms(phone: string, message: string) {
+    try {
+      let formattedPhone = phone.trim();
+      if (formattedPhone.startsWith('0')) {
+        formattedPhone = '94' + formattedPhone.slice(1);
+      } else if (formattedPhone.startsWith('+94')) {
+        formattedPhone = formattedPhone.slice(1);
+      }
+
+      const userId = this.configService.get<string>('NOTIFY_USER_ID');
+      const apiKey = this.configService.get<string>('NOTIFY_API_KEY');
+      const url = `https://app.notify.lk/api/v1/send?user_id=${userId}&api_key=${apiKey}&sender_id=NotifyDEMO&to=${formattedPhone}&message=${encodeURIComponent(message)}`;
+      const response = await fetch(url, { method: 'GET' });
+      if (response.ok) {
+        console.log(`Sent SMS to ${formattedPhone}`);
+      } else {
+        const errorText = await response.text();
+        console.error(`Failed to send SMS to ${formattedPhone}, status: ${response.status}, response: ${errorText}`);
+      }
+    } catch (error) {
+      console.error(`Error sending SMS to ${phone}`, error);
+    }
   }
 }

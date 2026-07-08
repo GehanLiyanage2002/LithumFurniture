@@ -59,7 +59,7 @@ export default function DashboardPage() {
         setTotalSuppliers(suppliers.length);
 
         // Assemble Recent Activity
-        const activities = [];
+        const activities: any[] = [];
         sales.forEach((s: any) => activities.push({
           action: 'Cash Sale',
           desc: `${s.productName} - LKR ${Number(s.totalPrice).toLocaleString()}`,

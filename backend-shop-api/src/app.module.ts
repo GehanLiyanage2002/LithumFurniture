@@ -12,13 +12,14 @@ import { ProductsModule } from './products/products.module';
 import { CashSalesModule } from './cash-sales/cash-sales.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { WorkshopStockModule } from './workshop-stock/workshop-stock.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
-        path: path.join(__dirname, '/i18n/'),
+        path: path.join(__dirname, 'i18n'),
         watch: true,
       },
       resolvers: [
@@ -60,6 +61,7 @@ import { WorkshopStockModule } from './workshop-stock/workshop-stock.module';
     SuppliersModule,
 
     WorkshopStockModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],
