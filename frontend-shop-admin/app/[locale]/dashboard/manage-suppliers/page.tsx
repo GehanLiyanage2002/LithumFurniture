@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Truck, PlusCircle, Trash2, Package } from "lucide-react";
 import Swal from 'sweetalert2';
 
@@ -22,6 +23,7 @@ interface Product {
 
 export default function ManageSuppliersPage() {
   const router = useRouter();
+  const t = useTranslations('ManageSuppliers');
   
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -165,7 +167,7 @@ export default function ManageSuppliersPage() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Manage Suppliers & Stocks</h1>
+        <h1 className="page-title">{t('title')}</h1>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
@@ -174,13 +176,13 @@ export default function ManageSuppliersPage() {
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', color: 'var(--primary)' }}>
             <Truck size={24} style={{ marginRight: '12px' }} />
-            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Supplier Companies</h3>
+            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>{t('supplier_companies')}</h3>
           </div>
           
           <form onSubmit={handleAddSupplier} style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-            <input required type="text" className="input-field" value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Company Name (e.g. Damro)" style={{ marginBottom: 0, flex: 1 }} />
+            <input required type="text" className="input-field" value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder={t('company_name_placeholder')} style={{ marginBottom: 0, flex: 1 }} />
             <button type="submit" className="btn-primary" disabled={addSupplierLoading}>
-              <PlusCircle size={16} /> Add
+              <PlusCircle size={16} /> {t('add_btn')}
             </button>
           </form>
 
@@ -188,7 +190,7 @@ export default function ManageSuppliersPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <tbody>
                 {suppliers.length === 0 ? (
-                  <tr><td style={{ padding: '16px', color: 'var(--text-secondary)' }}>No suppliers added yet.</td></tr>
+                  <tr><td style={{ padding: '16px', color: 'var(--text-secondary)' }}>{t('no_suppliers_added')}</td></tr>
                 ) : suppliers.map(s => (
                   <tr key={s.id} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={{ padding: '12px 16px', fontWeight: '500' }}>{s.companyName}</td>
@@ -206,38 +208,38 @@ export default function ManageSuppliersPage() {
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', color: 'var(--primary)' }}>
             <Package size={24} style={{ marginRight: '12px' }} />
-            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Add Supplier Stock</h3>
+            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>{t('add_supplier_stock')}</h3>
           </div>
           <form onSubmit={handleAddProduct}>
             <div className="input-group">
-              <label>Select Supplier <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>{t('select_supplier')} <span style={{ color: 'var(--error)' }}>*</span></label>
               <select required className="input-field" value={supplierName} onChange={e => setSupplierName(e.target.value)}>
-                <option value="">-- Choose Supplier --</option>
+                <option value="">{t('choose_supplier')}</option>
                 {suppliers.map(s => (
                   <option key={s.id} value={s.companyName}>{s.companyName}</option>
                 ))}
               </select>
             </div>
             <div className="input-group">
-              <label>Product Name <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>{t('product_name')} <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="text" className="input-field" value={productName} onChange={e => setProductName(e.target.value)} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="input-group">
-                <label>Cost Price <span style={{ color: 'var(--error)' }}>*</span></label>
+                <label>{t('cost_price')} <span style={{ color: 'var(--error)' }}>*</span></label>
                 <input required type="number" min="0" step="0.01" className="input-field" value={costPrice} onChange={e => setCostPrice(e.target.value)} />
               </div>
               <div className="input-group">
-                <label>Selling Price <span style={{ color: 'var(--error)' }}>*</span></label>
+                <label>{t('selling_price')} <span style={{ color: 'var(--error)' }}>*</span></label>
                 <input required type="number" min="0" step="0.01" className="input-field" value={unitPrice} onChange={e => setUnitPrice(e.target.value)} />
               </div>
             </div>
             <div className="input-group">
-              <label>Initial Quantity <span style={{ color: 'var(--error)' }}>*</span></label>
+              <label>{t('initial_quantity')} <span style={{ color: 'var(--error)' }}>*</span></label>
               <input required type="number" min="1" className="input-field" value={quantity} onChange={e => setQuantity(e.target.value)} />
             </div>
             <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={addProductLoading}>
-              {addProductLoading ? "Adding..." : "Add to Stock"}
+              {addProductLoading ? t('adding') : t('add_to_stock')}
             </button>
           </form>
         </div>
@@ -245,19 +247,19 @@ export default function ManageSuppliersPage() {
 
       {/* Supplier Stock List */}
       <div className="card">
-        <h3 style={{ fontSize: '1.25rem', marginBottom: '20px', color: 'var(--primary)' }}>Supplier Inventory</h3>
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '20px', color: 'var(--primary)' }}>{t('supplier_inventory')}</h3>
         {products.length === 0 ? (
-          <p className="text-secondary">No supplier products in stock.</p>
+          <p className="text-secondary">{t('no_supplier_products')}</p>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-                  <th style={{ padding: '12px 16px' }}>Supplier</th>
-                  <th style={{ padding: '12px 16px' }}>Product Name</th>
-                  <th style={{ padding: '12px 16px' }}>Cost / Selling Price</th>
-                  <th style={{ padding: '12px 16px' }}>Quantity</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
+                  <th style={{ padding: '12px 16px' }}>{t('table_supplier')}</th>
+                  <th style={{ padding: '12px 16px' }}>{t('table_product_name')}</th>
+                  <th style={{ padding: '12px 16px' }}>{t('table_price')}</th>
+                  <th style={{ padding: '12px 16px' }}>{t('table_quantity')}</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'right' }}>{t('table_actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -268,12 +270,12 @@ export default function ManageSuppliersPage() {
                     </td>
                     <td style={{ padding: '16px', fontWeight: '600' }}>{p.productName}</td>
                     <td style={{ padding: '16px' }}>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Cost: {Number(p.costPrice).toLocaleString()}</div>
-                      <div style={{ color: 'var(--primary)', fontWeight: '600' }}>Sell: {Number(p.unitPrice).toLocaleString()}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{t('cost_label')} {Number(p.costPrice).toLocaleString()}</div>
+                      <div style={{ color: 'var(--primary)', fontWeight: '600' }}>{t('sell_label')} {Number(p.unitPrice).toLocaleString()}</div>
                     </td>
                     <td style={{ padding: '16px' }}>
                       <span className={`badge ${p.quantity > 5 ? 'badge-success' : 'badge-primary'}`} style={{ background: p.quantity <= 5 ? 'rgba(220, 38, 38, 0.1)' : undefined, color: p.quantity <= 5 ? 'var(--error)' : undefined }}>
-                        {p.quantity} in stock
+                        {p.quantity} {t('in_stock')}
                       </span>
                     </td>
                     <td style={{ padding: '16px', textAlign: 'right' }}>

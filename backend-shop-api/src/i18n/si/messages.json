@@ -1,0 +1,6 @@
+{
+  "errors": {
+    "USER_NOT_FOUND": "පරිශීලකයා හමු නොවීය",
+    "INVALID_CREDENTIALS": "පරිශීලක නාමය හෝ මුරපදය වැරදියි"
+  }
+}

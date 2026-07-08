@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "../../i18n/routing";
+import { useTranslations } from "next-intl";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 import "./globals.css";
 
 export default function LoginPage() {
+  const t = useTranslations('Index');
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -46,21 +49,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', width: '100%' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', width: '100%', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: '16px', right: '16px' }}>
+        <LanguageSwitcher />
+      </div>
       <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '40px' }}>
         <div className="text-center mb-4">
-          <h1 style={{ fontSize: '2rem', marginBottom: '8px' }}>Lithum Furniture</h1>
-          <p className="text-secondary">Admin Portal</p>
+          <h1 style={{ fontSize: '2rem', marginBottom: '8px' }}>{t('title')}</h1>
+          <p className="text-secondary">{t('admin_portal')}</p>
         </div>
 
         <form onSubmit={handleLogin}>
           <div className="input-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="username">{t('username')}</label>
             <input
               id="username"
               type="text"
               className="input-field"
-              placeholder="Enter username"
+              placeholder={t('enter_username')}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -68,12 +74,12 @@ export default function LoginPage() {
           </div>
 
           <div className="input-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('password')}</label>
             <input
               id="password"
               type="password"
               className="input-field"
-              placeholder="Enter password"
+              placeholder={t('enter_password')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -83,7 +89,7 @@ export default function LoginPage() {
           {error && <div className="text-error mb-4 text-center">{error}</div>}
 
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? "Authenticating..." : "Sign In"}
+            {loading ? t('authenticating') : t('sign_in')}
           </button>
         </form>
       </div>
