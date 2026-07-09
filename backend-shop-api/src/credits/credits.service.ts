@@ -155,6 +155,33 @@ Please make the payment ASAP. Thank you!`;
     }
   }
 
+  async findCustomerByNic(nic: string): Promise<Partial<Credit> | null> {
+    const credit = await this.creditsRepository.findOne({
+      where: { nic },
+      order: { createdAt: 'DESC' },
+    });
+    
+    if (!credit) return null;
+    
+    return {
+      firstName: credit.firstName,
+      lastName: credit.lastName,
+      nic: credit.nic,
+      mobile1: credit.mobile1,
+      mobile2: credit.mobile2,
+      nicFrontImage: credit.nicFrontImage,
+      nicRearImage: credit.nicRearImage,
+      customerFaceImage: credit.customerFaceImage,
+    };
+  }
+
+  async findCreditHistoryByNic(nic: string): Promise<Credit[]> {
+    return this.creditsRepository.find({
+      where: { nic },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   private async sendSms(phone: string, message: string) {
     try {
       let formattedPhone = phone.trim();

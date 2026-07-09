@@ -62,6 +62,8 @@ export default function CreditHistoryPage() {
   // Search, Filter, and Pagination State
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [dateFilter, setDateFilter] = useState("ALL"); // ALL, TODAY, THIS_MONTH, SPECIFIC
+  const [specificDate, setSpecificDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -175,14 +177,31 @@ export default function CreditHistoryPage() {
     setProfileModalOpen(true);
   };
 
+  const isSameDay = (d1: Date, d2: Date) => d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+  const isSameMonth = (d1: Date, d2: Date) => d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
+
   // Filter and Paginate Data
   const filteredCredits = useMemo(() => {
     return credits.filter(c => {
       const matchesSearch = c.nic.toLowerCase().includes(searchTerm.toLowerCase()) || c.productName.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === "ALL" || (c.status || "ACTIVE") === statusFilter;
-      return matchesSearch && matchesStatus;
+      
+      let matchesDate = true;
+      if (dateFilter !== "ALL" && c.createdAt) {
+        const creditDate = new Date(c.createdAt);
+        if (dateFilter === "TODAY") {
+          matchesDate = isSameDay(creditDate, new Date());
+        } else if (dateFilter === "THIS_MONTH") {
+          matchesDate = isSameMonth(creditDate, new Date());
+        } else if (dateFilter === "SPECIFIC" && specificDate) {
+          const specific = new Date(specificDate);
+          matchesDate = isSameDay(creditDate, specific);
+        }
+      }
+
+      return matchesSearch && matchesStatus && matchesDate;
     });
-  }, [credits, searchTerm, statusFilter]);
+  }, [credits, searchTerm, statusFilter, dateFilter, specificDate]);
 
   const totalPages = Math.ceil(filteredCredits.length / itemsPerPage);
   const currentCredits = filteredCredits.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -190,7 +209,7 @@ export default function CreditHistoryPage() {
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter]);
+  }, [searchTerm, statusFilter, dateFilter, specificDate]);
 
   return (
     <div>
@@ -226,8 +245,63 @@ export default function CreditHistoryPage() {
                 <option value="COMPLETED">{t('completed')}</option>
               </select>
             </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <select 
+                className="input-field" 
+                value={dateFilter} 
+                onChange={e => setDateFilter(e.target.value)}
+                style={{ padding: '8px 16px', marginBottom: 0, width: '180px' }}
+              >
+                <option value="ALL">All Time</option>
+                <option value="TODAY">Today</option>
+                <option value="THIS_MONTH">This Month</option>
+                <option value="SPECIFIC">Specific Date</option>
+              </select>
+
+              {dateFilter === "SPECIFIC" && (
+                <input 
+                  type="date" 
+                  className="input-field" 
+                  value={specificDate}
+                  onChange={e => setSpecificDate(e.target.value)}
+                  style={{ padding: '8px 16px', marginBottom: 0 }}
+                />
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Filtered Totals Summary */}
+        {(() => {
+          let fDownPayments = 0;
+          let fTotalLoans = 0;
+          let fReceivables = 0;
+          filteredCredits.forEach(c => {
+            fDownPayments += Number(c.downPayment || 0);
+            fTotalLoans += Number(c.totalPayment || 0);
+            fReceivables += Math.max(0, Number(c.totalPayment || 0) - Number(c.paidAmount || 0));
+          });
+          return (
+            <div style={{ display: 'flex', gap: '32px', marginBottom: '24px', padding: '16px 24px', background: 'linear-gradient(to right, #EEF2FF, #ffffff)', border: '1px solid #C7D2FE', borderRadius: '12px', flexWrap: 'wrap' }}>
+              <div>
+                <span style={{ fontSize: '0.85rem', color: '#3730A3', textTransform: 'uppercase', fontWeight: 600 }}>Period Loans Generated</span>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4338CA' }}>LKR {fTotalLoans.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+              </div>
+              <div style={{ borderLeft: '1px solid #C7D2FE', paddingLeft: '32px' }}>
+                <span style={{ fontSize: '0.85rem', color: '#3730A3', textTransform: 'uppercase', fontWeight: 600 }}>Period Downpayments</span>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4338CA' }}>LKR {fDownPayments.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+              </div>
+              <div style={{ borderLeft: '1px solid #C7D2FE', paddingLeft: '32px' }}>
+                <span style={{ fontSize: '0.85rem', color: '#3730A3', textTransform: 'uppercase', fontWeight: 600 }}>Current Receivables (From Period)</span>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4338CA' }}>LKR {fReceivables.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+              </div>
+              <div style={{ borderLeft: '1px solid #C7D2FE', paddingLeft: '32px' }}>
+                <span style={{ fontSize: '0.85rem', color: '#3730A3', textTransform: 'uppercase', fontWeight: 600 }}>Records</span>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4338CA' }}>{filteredCredits.length}</div>
+              </div>
+            </div>
+          );
+        })()}
         
         {loading ? (
           <p>{t('loading_history')}</p>

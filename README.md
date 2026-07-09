@@ -18,24 +18,27 @@ Welcome to the **Lithum Furniture Management System**, a fully modernized, full-
 
 ### 2. Advanced Credit System (Provide Goods on Credit)
 - Provides long-term payment plans for customers.
-- **Dynamic Interest Calculation**: Automatically scales interest based on the chosen month duration (e.g., 10% for 3 months, 35% for 7+ months).
-- **KYC & Security Verification**: Live webcam integration allows cashiers to capture customer faces directly from the browser, along with uploading NIC front/rear images.
+- **Smart NIC Customer Management**: Automatically validates and searches existing customers using Sri Lankan NIC formats (9-digit V/X or 12-digit). Auto-fills details and displays their previous credit transaction history.
+- **Dynamic Interest Calculation**: Automatically scales interest based on the chosen month duration.
+- **KYC & Security Verification**: Live webcam integration allows cashiers to capture customer faces directly from the browser, along with uploading NIC images.
 - **Printable Agreements**: Generates a professional credit agreement upon submission.
 
 ### 3. Credit History & Debt Management
 - Centralized dashboard to track active loans, pending balances, and paid amounts.
+- **Advanced Date Filtering**: Filter credit records by Today, This Month, or Specific Dates with dynamically updating summary totals (Period Loans Generated, Period Downpayments).
 - **Early Settlement Support**: Robust backend recalculation that allows customers to settle their debts early, updating the final due amounts accurately to zero.
 - Image verification lightboxes (Click-to-zoom for customer identity validation).
 
-### 4. Inventory & Supplier Management
-- **Raw Stock Management**: Track in-house manufactured furniture.
-- **Supplier Ecosystem**: Register external distributor companies (e.g., Damro, Singer) and distinctly track supplier-provided inventory.
-- One-click restock features.
+### 4. Inventory, Workshop & Supplier Management
+- **Raw Stock Management**: Track in-house manufactured furniture with live search filtering.
+- **Workshop Inventory**: Dedicated management for work-in-progress goods. Easily transfer completed products directly from the workshop to the main shop floor.
+- **Supplier Ecosystem**: Register external distributor companies and distinctly track supplier-provided inventory.
+- One-click restock features and instant search across all inventory tables.
 
 ### 5. Financial Analytics Dashboard
 - Comprehensive multi-source analytics combining POS direct sales and Credit down payments.
 - Real-time calculations of **Global Earnings** and **Outstanding Customer Payables**.
-- Revenue breakdown and actionable data insights.
+- **POS Transaction History**: Robust date filtering with a dynamic summary banner that instantly recalculates Period Revenue and Profit based on the selected timeframe.
 
 ## 🛠️ How to Run Locally
 

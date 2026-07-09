@@ -412,3 +412,49 @@ tr:hover td {
 .text-center { text-align: center; }
 .mb-4 { margin-bottom: 1rem; }
 .mb-8 { margin-bottom: 2rem; }
+
+/* Modern SweetAlert2 Overrides */
+div:where(.swal2-container) div:where(.swal2-popup) {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 32px 24px;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+div:where(.swal2-container) h2:where(.swal2-title) {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--text-main);
+  padding-top: 12px;
+}
+
+div:where(.swal2-container) div:where(.swal2-html-container) {
+  font-family: 'Inter', sans-serif;
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+div:where(.swal2-container) div:where(.swal2-actions) {
+  gap: 16px;
+  margin-top: 24px;
+}
+
+/* Modern Toasts */
+div:where(.swal2-container).swal2-top-end > div:where(.swal2-toast) {
+  padding: 16px 20px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border-left: 4px solid var(--primary);
+  background: var(--bg-surface);
+}
+
+div:where(.swal2-container).swal2-top-end > div:where(.swal2-toast) .swal2-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+div:where(.swal2-container).swal2-top-end > div:where(.swal2-toast) .swal2-html-container {
+  font-size: 0.85rem;
+  margin-top: 4px;
+}

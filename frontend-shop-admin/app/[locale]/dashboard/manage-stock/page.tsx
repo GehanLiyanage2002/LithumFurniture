@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Package, PlusCircle, Trash2 } from "lucide-react";
+import { Package, PlusCircle, Trash2, Search } from "lucide-react";
 import Swal from 'sweetalert2';
 
 interface Product {
@@ -37,6 +37,8 @@ export default function ManageStockPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchProducts = async () => {
     try {
@@ -163,8 +165,17 @@ export default function ManageStockPage() {
   const totalItemsInStock = products.reduce((acc, p) => acc + Number(p.quantity), 0);
   const totalStockValue = products.reduce((acc, p) => acc + (Number(p.unitPrice) * Number(p.quantity)), 0);
 
-  const totalPages = Math.ceil(products.length / itemsPerPage);
-  const currentProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm) return products;
+    return products.filter(p => p.productName.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [products, searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const currentProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div>
@@ -224,9 +235,22 @@ export default function ManageStockPage() {
 
         {/* Product List */}
         <div className="card">
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', color: 'var(--primary)' }}>
-            <Package size={24} style={{ marginRight: '12px' }} />
-            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>{t('current_stock')}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', color: 'var(--primary)' }}>
+              <Package size={24} style={{ marginRight: '12px' }} />
+              <h3 style={{ fontSize: '1.25rem', margin: 0 }}>{t('current_stock')}</h3>
+            </div>
+            <div style={{ position: 'relative', width: '250px' }}>
+              <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+              <input 
+                type="text" 
+                placeholder="Search products..." 
+                className="input-field" 
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                style={{ paddingLeft: '40px', marginBottom: 0 }}
+              />
+            </div>
           </div>
 
           {loading ? (
@@ -286,10 +310,10 @@ export default function ManageStockPage() {
           )}
 
           {/* Pagination Controls */}
-          {products.length > 0 && totalPages > 1 && (
+          {filteredProducts.length > 0 && totalPages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderTop: '1px solid var(--border)', background: '#F9FAFB', marginTop: '16px', borderRadius: '0 0 12px 12px' }}>
               <span className="text-secondary" style={{ fontSize: '0.9rem' }}>
-                {t('showing')} {((currentPage - 1) * itemsPerPage) + 1} {t('to')} {Math.min(currentPage * itemsPerPage, products.length)} {t('of')} {products.length} {t('products')}
+                {t('showing')} {((currentPage - 1) * itemsPerPage) + 1} {t('to')} {Math.min(currentPage * itemsPerPage, filteredProducts.length)} {t('of')} {filteredProducts.length} {t('products')}
               </span>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button 

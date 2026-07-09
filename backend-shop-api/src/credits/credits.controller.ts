@@ -35,4 +35,14 @@ export class CreditsController {
   getPayments(@Param('id') id: string) {
     return this.creditsService.getPayments(id);
   }
+
+  @Get('customer/search/:nic')
+  findCustomerByNic(@Param('nic') nic: string) {
+    return this.creditsService.findCustomerByNic(nic);
+  }
+
+  @Get('customer/history/:nic')
+  findCreditHistoryByNic(@Param('nic') nic: string) {
+    return this.creditsService.findCreditHistoryByNic(nic);
+  }
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { FileText, Camera, X, Printer, CheckCircle } from "lucide-react";
+import { FileText, Camera, X, Printer, CheckCircle, Search, History } from "lucide-react";
 import Swal from 'sweetalert2';
 
 export default function AddCreditPage() {
@@ -36,6 +36,10 @@ export default function AddCreditPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const [loading, setLoading] = useState(false);
+  const [isSearchingNic, setIsSearchingNic] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [customerHistory, setCustomerHistory] = useState<any[]>([]);
+  
   const [message, setMessage] = useState("");
   const [products, setProducts] = useState<any[]>([]);
   const [receiptData, setReceiptData] = useState<any>(null);
@@ -57,6 +61,81 @@ export default function AddCreditPage() {
     const token = localStorage.getItem("admin_token");
     if (!token) router.push("/");
   }, [router]);
+
+  const validateNic = (nicNumber: string) => {
+    const oldNicRegex = /^[0-9]{9}[vVxX]$/;
+    const newNicRegex = /^[0-9]{12}$/;
+    return oldNicRegex.test(nicNumber) || newNicRegex.test(nicNumber);
+  };
+
+  const handleNicSearch = async () => {
+    if (!nic) return;
+    
+    if (!validateNic(nic)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid NIC',
+        text: 'Please enter a valid Sri Lankan NIC (9 digits + V/X or 12 digits).',
+      });
+      return;
+    }
+
+    setIsSearchingNic(true);
+    try {
+      const token = localStorage.getItem("admin_token");
+      const res = await fetch(`http://localhost:4000/credits/customer/search/${nic}`, { 
+        headers: { "Authorization": `Bearer ${token}` } 
+      });
+      if (res.ok) {
+        const text = await res.text();
+        const data = text ? JSON.parse(text) : null;
+        
+        if (data && data.firstName) {
+          setFirstName(data.firstName || "");
+          setLastName(data.lastName || "");
+          setMobile1(data.mobile1 || "");
+          setMobile2(data.mobile2 || "");
+          if (data.nicFrontImage) setNicFront(data.nicFrontImage);
+          if (data.nicRearImage) setNicRear(data.nicRearImage);
+          if (data.customerFaceImage) setCustomerFaceImage(data.customerFaceImage);
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Customer Found!',
+            text: 'Customer details auto-filled successfully.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+          });
+
+          // Fetch History
+          const historyRes = await fetch(`http://localhost:4000/credits/customer/history/${nic}`, { 
+            headers: { "Authorization": `Bearer ${token}` } 
+          });
+          if (historyRes.ok) {
+            const hText = await historyRes.text();
+            setCustomerHistory(hText ? JSON.parse(hText) : []);
+          }
+        } else {
+          Swal.fire({
+            icon: 'info',
+            title: 'New Customer',
+            text: 'No existing customer found with this NIC. Please fill in the details.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+          });
+          setCustomerHistory([]);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to search NIC", err);
+    } finally {
+      setIsSearchingNic(false);
+    }
+  };
 
   // Calculate interest based on months
   useEffect(() => {
@@ -151,14 +230,26 @@ export default function AddCreditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!validateNic(nic)) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Invalid NIC',
+        text: 'Please enter a valid Sri Lankan NIC (9 digits + V/X or 12 digits) before submitting.',
+      });
+      return;
+    }
+
     const result = await Swal.fire({
       title: 'Confirm Submission',
       text: "Are you sure you want to submit this credit record?",
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#059669', // success green
-      cancelButtonColor: '#6B7280', // secondary gray
-      confirmButtonText: 'Yes, submit it!'
+      confirmButtonText: 'Yes, submit it!',
+      customClass: {
+        confirmButton: 'btn-primary',
+        cancelButton: 'btn-outline'
+      },
+      buttonsStyling: false
     });
     
     if (!result.isConfirmed) return;
@@ -335,9 +426,12 @@ export default function AddCreditPage() {
       text: "Are you sure you want to clear all form fields?",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#DC2626', // error red
-      cancelButtonColor: '#6B7280',
-      confirmButtonText: 'Yes, clear it!'
+      confirmButtonText: 'Yes, clear it!',
+      customClass: {
+        confirmButton: 'btn-danger',
+        cancelButton: 'btn-outline'
+      },
+      buttonsStyling: false
     });
     
     if (!result.isConfirmed) return;
@@ -388,8 +482,20 @@ export default function AddCreditPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label>{t('nic')} <span style={{ color: 'var(--error)' }}>*</span></label>
-              <input required type="text" className="input-field" value={nic} onChange={e => setNic(e.target.value)} />
+              <label style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>{t('nic')} <span style={{ color: 'var(--error)' }}>*</span></span>
+                {customerHistory.length > 0 && (
+                  <button type="button" onClick={() => setShowHistoryModal(true)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <History size={14} /> View History ({customerHistory.length})
+                  </button>
+                )}
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input required type="text" className="input-field" style={{ flex: 1 }} value={nic} onChange={e => setNic(e.target.value)} placeholder="Enter NIC" />
+                <button type="button" onClick={handleNicSearch} disabled={isSearchingNic || !nic} className="btn-primary" style={{ padding: '0 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Search size={18} /> {isSearchingNic ? '...' : 'Search'}
+                </button>
+              </div>
             </div>
             <div className="input-group" style={{ marginBottom: 0 }}>
               <label>{t('bill_no')}</label>
@@ -662,6 +768,60 @@ export default function AddCreditPage() {
               <button type="button" className="btn-primary" onClick={captureFace} disabled={!cameraActive} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}>
                 <Camera size={18} /> {t('capture')}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* History Modal */}
+      {showHistoryModal && (
+        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={(e) => { if (e.target === e.currentTarget) setShowHistoryModal(false); }}>
+          <div className="modal-content" style={{ maxWidth: '800px', width: '100%', background: '#fff', padding: '24px', borderRadius: '16px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--border)' }}>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <History size={20} color="var(--primary)" /> Customer Credit History
+              </h3>
+              <button type="button" onClick={() => setShowHistoryModal(false)} style={{ background: '#f3f4f6', border: 'none', cursor: 'pointer', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4b5563' }}><X size={18} /></button>
+            </div>
+            
+            <div style={{ overflowX: 'auto', maxHeight: '60vh', overflowY: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                <thead>
+                  <tr style={{ background: '#f9fafb', borderBottom: '2px solid #e5e7eb', textAlign: 'left' }}>
+                    <th style={{ padding: '12px', fontWeight: 600, color: '#374151' }}>Date</th>
+                    <th style={{ padding: '12px', fontWeight: 600, color: '#374151' }}>Product</th>
+                    <th style={{ padding: '12px', fontWeight: 600, color: '#374151' }}>Total Loan</th>
+                    <th style={{ padding: '12px', fontWeight: 600, color: '#374151' }}>Paid Amount</th>
+                    <th style={{ padding: '12px', fontWeight: 600, color: '#374151' }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {customerHistory.map((historyItem: any) => (
+                    <tr key={historyItem.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', color: '#4b5563' }}>{new Date(historyItem.createdAt).toLocaleDateString()}</td>
+                      <td style={{ padding: '12px', color: '#111827', fontWeight: 500 }}>{historyItem.productName}</td>
+                      <td style={{ padding: '12px', color: '#4b5563' }}>LKR {Number(historyItem.totalPayment).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                      <td style={{ padding: '12px', color: '#059669', fontWeight: 500 }}>LKR {Number(historyItem.paidAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{ 
+                          padding: '4px 8px', 
+                          borderRadius: '9999px', 
+                          fontSize: '0.75rem', 
+                          fontWeight: 600, 
+                          background: historyItem.status === 'COMPLETED' ? '#d1fae5' : '#fee2e2',
+                          color: historyItem.status === 'COMPLETED' ? '#065f46' : '#991b1b'
+                        }}>
+                          {historyItem.status || 'ACTIVE'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+              <button type="button" className="btn-outline" onClick={() => setShowHistoryModal(false)} style={{ padding: '10px 24px' }}>Close</button>
             </div>
           </div>
         </div>

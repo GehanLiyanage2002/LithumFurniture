@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Wrench, PlusCircle, Trash2, ArrowRight, History as HistoryIcon, Download } from "lucide-react";
+import { Wrench, PlusCircle, Trash2, ArrowRight, History as HistoryIcon, Download, Search } from "lucide-react";
 import Swal from 'sweetalert2';
 
 interface WorkshopStock {
@@ -36,6 +36,8 @@ export default function WorkshopStockPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"current" | "history">("current");
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [productName, setProductName] = useState("");
   const [quantity, setQuantity] = useState("1");
@@ -214,8 +216,17 @@ export default function WorkshopStockPage() {
   const totalProductTypes = stocks.length;
   const totalItemsInStock = stocks.reduce((acc, p) => acc + Number(p.quantity), 0);
 
-  const totalPages = Math.ceil(stocks.length / itemsPerPage);
-  const currentStocks = stocks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const filteredStocks = useMemo(() => {
+    if (!searchTerm) return stocks;
+    return stocks.filter(s => s.productName.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [stocks, searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const totalPages = Math.ceil(filteredStocks.length / itemsPerPage);
+  const currentStocks = filteredStocks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const totalHistoryPages = Math.ceil(history.length / itemsPerPage);
   const currentHistory = history.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -274,19 +285,35 @@ export default function WorkshopStockPage() {
 
         {/* Tabs and Data Area */}
         <div className="card">
-          <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
-            <button 
-              onClick={() => { setActiveTab("current"); setCurrentPage(1); }}
-              style={{ background: 'none', border: 'none', fontSize: '1.1rem', fontWeight: '600', color: activeTab === "current" ? 'var(--primary)' : 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
-            >
-              <Wrench size={20} /> {t('tab_current_stock')}
-            </button>
-            <button 
-              onClick={() => { setActiveTab("history"); setCurrentPage(1); }}
-              style={{ background: 'none', border: 'none', fontSize: '1.1rem', fontWeight: '600', color: activeTab === "history" ? 'var(--primary)' : 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
-            >
-              <HistoryIcon size={20} /> {t('tab_history_log')}
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid var(--border)', paddingBottom: '16px', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <button 
+                onClick={() => { setActiveTab("current"); setCurrentPage(1); }}
+                style={{ background: 'none', border: 'none', fontSize: '1.1rem', fontWeight: '600', color: activeTab === "current" ? 'var(--primary)' : 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <Wrench size={20} /> {t('tab_current_stock')}
+              </button>
+              <button 
+                onClick={() => { setActiveTab("history"); setCurrentPage(1); }}
+                style={{ background: 'none', border: 'none', fontSize: '1.1rem', fontWeight: '600', color: activeTab === "history" ? 'var(--primary)' : 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <HistoryIcon size={20} /> {t('tab_history_log')}
+              </button>
+            </div>
+            
+            {activeTab === "current" && (
+              <div style={{ position: 'relative', width: '250px' }}>
+                <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                <input 
+                  type="text" 
+                  placeholder="Search workshop stock..." 
+                  className="input-field" 
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  style={{ paddingLeft: '40px', marginBottom: 0 }}
+                />
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -295,7 +322,7 @@ export default function WorkshopStockPage() {
             <p className="text-error">{error}</p>
           ) : activeTab === "current" ? (
             // CURRENT STOCK VIEW
-            stocks.length === 0 ? (
+            filteredStocks.length === 0 ? (
               <p className="text-secondary">{t('no_products_workshop')}</p>
             ) : (
             <div style={{ overflowX: 'auto' }}>
@@ -345,10 +372,10 @@ export default function WorkshopStockPage() {
           ) : null}
 
           {/* Pagination Controls for Current Stock */}
-          {activeTab === "current" && stocks.length > 0 && totalPages > 1 && (
+          {activeTab === "current" && filteredStocks.length > 0 && totalPages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderTop: '1px solid var(--border)', background: '#F9FAFB', marginTop: '16px', borderRadius: '0 0 12px 12px' }}>
               <span className="text-secondary" style={{ fontSize: '0.9rem' }}>
-                {t('showing')} {((currentPage - 1) * itemsPerPage) + 1} {t('to')} {Math.min(currentPage * itemsPerPage, stocks.length)} {t('of')} {stocks.length} {t('products')}
+                {t('showing')} {((currentPage - 1) * itemsPerPage) + 1} {t('to')} {Math.min(currentPage * itemsPerPage, filteredStocks.length)} {t('of')} {filteredStocks.length} {t('products')}
               </span>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button 

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Truck, PlusCircle, Trash2, Package } from "lucide-react";
+import { Truck, PlusCircle, Trash2, Package, Search } from "lucide-react";
 import Swal from 'sweetalert2';
 
 interface Supplier {
@@ -28,6 +28,8 @@ export default function ManageSuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [companyName, setCompanyName] = useState("");
   const [addSupplierLoading, setAddSupplierLoading] = useState(false);
@@ -162,6 +164,15 @@ export default function ManageSuppliersPage() {
     fetchData();
   };
 
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm) return products;
+    const term = searchTerm.toLowerCase();
+    return products.filter(p => 
+      p.productName.toLowerCase().includes(term) || 
+      (p.supplierName && p.supplierName.toLowerCase().includes(term))
+    );
+  }, [products, searchTerm]);
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -247,8 +258,21 @@ export default function ManageSuppliersPage() {
 
       {/* Supplier Stock List */}
       <div className="card">
-        <h3 style={{ fontSize: '1.25rem', marginBottom: '20px', color: 'var(--primary)' }}>{t('supplier_inventory')}</h3>
-        {products.length === 0 ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '16px' }}>
+          <h3 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--primary)' }}>{t('supplier_inventory')}</h3>
+          <div style={{ position: 'relative', width: '250px' }}>
+            <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+            <input 
+              type="text" 
+              placeholder="Search by product or supplier..." 
+              className="input-field" 
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{ paddingLeft: '40px', marginBottom: 0 }}
+            />
+          </div>
+        </div>
+        {filteredProducts.length === 0 ? (
           <p className="text-secondary">{t('no_supplier_products')}</p>
         ) : (
           <div style={{ overflowX: 'auto' }}>
@@ -263,7 +287,7 @@ export default function ManageSuppliersPage() {
                 </tr>
               </thead>
               <tbody>
-                {products.map(p => (
+                {filteredProducts.map(p => (
                   <tr key={p.id} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={{ padding: '16px', fontWeight: '500' }}>
                       <span style={{ background: '#F3F4F6', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85rem' }}>{p.supplierName}</span>

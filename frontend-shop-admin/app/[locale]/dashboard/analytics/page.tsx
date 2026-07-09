@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { TrendingUp, Calendar, DollarSign, Package, BarChart3, Printer } from "lucide-react";
@@ -44,6 +44,10 @@ export default function AnalyticsPage() {
   // Pagination for POS History
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
+
+  // POS History Filters
+  const [dateFilter, setDateFilter] = useState("ALL"); // ALL, TODAY, THIS_MONTH, SPECIFIC
+  const [specificDate, setSpecificDate] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,8 +116,34 @@ export default function AnalyticsPage() {
   const totalOverallEarnings = totalPosSales + totalCreditEarnings;
   const totalStockItems = products.reduce((acc, p) => acc + Number(p.quantity), 0);
 
-  const totalPages = Math.ceil(sales.length / itemsPerPage);
-  const currentSales = sales.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const filteredSales = useMemo(() => {
+    return sales.filter(sale => {
+      if (dateFilter === "ALL") return true;
+      const saleDate = new Date(sale.createdAt);
+      if (dateFilter === "TODAY") {
+        return isSameDay(saleDate, new Date());
+      }
+      if (dateFilter === "THIS_MONTH") {
+        return isSameMonth(saleDate, new Date());
+      }
+      if (dateFilter === "SPECIFIC" && specificDate) {
+        // compare YYYY-MM-DD
+        const specific = new Date(specificDate);
+        // JS Date parsing from YYYY-MM-DD sets time to midnight UTC, we need local day comparison
+        return saleDate.getFullYear() === specific.getFullYear() && 
+               saleDate.getMonth() === specific.getMonth() && 
+               saleDate.getDate() === specific.getDate();
+      }
+      return true;
+    });
+  }, [sales, dateFilter, specificDate]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dateFilter, specificDate]);
+
+  const totalPages = Math.ceil(filteredSales.length / itemsPerPage);
+  const currentSales = filteredSales.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const printReceipt = (sale: CashSale) => {
     const iframe = document.createElement("iframe");
@@ -288,9 +318,61 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="card">
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '20px', color: 'var(--primary)' }}>{t('pos_transaction_history')}</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '16px' }}>
+              <h3 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--primary)' }}>{t('pos_transaction_history')}</h3>
+              
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <select 
+                  className="input-field" 
+                  value={dateFilter} 
+                  onChange={e => setDateFilter(e.target.value)}
+                  style={{ padding: '8px 16px', marginBottom: 0, width: '180px' }}
+                >
+                  <option value="ALL">All Time</option>
+                  <option value="TODAY">Today</option>
+                  <option value="THIS_MONTH">This Month</option>
+                  <option value="SPECIFIC">Specific Date</option>
+                </select>
+
+                {dateFilter === "SPECIFIC" && (
+                  <input 
+                    type="date" 
+                    className="input-field" 
+                    value={specificDate}
+                    onChange={e => setSpecificDate(e.target.value)}
+                    style={{ padding: '8px 16px', marginBottom: 0 }}
+                  />
+                )}
+              </div>
+            </div>
             
-            {sales.length === 0 ? (
+            {/* Filtered Totals Summary */}
+            {(() => {
+              let fSales = 0;
+              let fProfit = 0;
+              filteredSales.forEach(s => {
+                fSales += Number(s.totalPrice);
+                fProfit += (Number(s.totalPrice) - Number(s.totalCost || 0));
+              });
+              return (
+                <div style={{ display: 'flex', gap: '32px', marginBottom: '24px', padding: '16px 24px', background: 'linear-gradient(to right, #F0FDF4, #ffffff)', border: '1px solid #BBF7D0', borderRadius: '12px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.85rem', color: '#166534', textTransform: 'uppercase', fontWeight: 600 }}>Period Revenue</span>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#15803D' }}>LKR {fSales.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                  </div>
+                  <div style={{ borderLeft: '1px solid #BBF7D0', paddingLeft: '32px' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#166534', textTransform: 'uppercase', fontWeight: 600 }}>Period Profit</span>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#15803D' }}>LKR {fProfit.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                  </div>
+                  <div style={{ borderLeft: '1px solid #BBF7D0', paddingLeft: '32px' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#166534', textTransform: 'uppercase', fontWeight: 600 }}>Transactions</span>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#15803D' }}>{filteredSales.length}</div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {filteredSales.length === 0 ? (
               <p className="text-secondary">{t('no_cash_sales')}</p>
             ) : (
               <div style={{ overflowX: 'auto' }}>
@@ -344,7 +426,7 @@ export default function AnalyticsPage() {
             {totalPages > 1 && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderTop: '1px solid var(--border)', background: '#F9FAFB', marginTop: '16px', borderRadius: '0 0 12px 12px' }}>
                 <span className="text-secondary" style={{ fontSize: '0.9rem' }}>
-                  {t('showing')} {((currentPage - 1) * itemsPerPage) + 1} {t('to')} {Math.min(currentPage * itemsPerPage, sales.length)} {t('of')} {sales.length} {t('transactions')}
+                  {t('showing')} {((currentPage - 1) * itemsPerPage) + 1} {t('to')} {Math.min(currentPage * itemsPerPage, filteredSales.length)} {t('of')} {filteredSales.length} {t('transactions')}
                 </span>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button 
