@@ -55,7 +55,7 @@ export default function WorkshopStockPage() {
 
   const fetchStocks = async () => {
     try {
-      const token = localStorage.getItem("admin_token");
+      const token = sessionStorage.getItem("admin_token");
       const [res, histRes, sumRes] = await Promise.all([
         fetch("http://localhost:4000/workshop-stock", { headers: { "Authorization": `Bearer ${token}` } }),
         fetch("http://localhost:4000/workshop-stock/history", { headers: { "Authorization": `Bearer ${token}` } }),
@@ -79,7 +79,7 @@ export default function WorkshopStockPage() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     if (!token) {
       router.push("/");
       return;
@@ -92,7 +92,7 @@ export default function WorkshopStockPage() {
     setAddLoading(true);
     setMessage("");
 
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     
     try {
       const res = await fetch("http://localhost:4000/workshop-stock", {
@@ -135,7 +135,7 @@ export default function WorkshopStockPage() {
     
     if (!result.isConfirmed) return;
     
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     try {
       const res = await fetch(`http://localhost:4000/workshop-stock/${id}`, {
         method: "DELETE",
@@ -153,7 +153,7 @@ export default function WorkshopStockPage() {
     if (!transferTargetStock) return;
     setTransferLoading(true);
 
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     
     try {
       const res = await fetch(`http://localhost:4000/workshop-stock/${transferTargetStock.id}/transfer`, {

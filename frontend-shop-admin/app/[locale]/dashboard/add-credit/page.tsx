@@ -47,7 +47,7 @@ export default function AddCreditPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const token = localStorage.getItem("admin_token");
+        const token = sessionStorage.getItem("admin_token");
         const res = await fetch("http://localhost:4000/products", { headers: { "Authorization": `Bearer ${token}` } });
         if (res.ok) setProducts(await res.json());
       } catch (err) {
@@ -58,7 +58,7 @@ export default function AddCreditPage() {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     if (!token) router.push("/");
   }, [router]);
 
@@ -82,7 +82,7 @@ export default function AddCreditPage() {
 
     setIsSearchingNic(true);
     try {
-      const token = localStorage.getItem("admin_token");
+      const token = sessionStorage.getItem("admin_token");
       const res = await fetch(`http://localhost:4000/credits/customer/search/${nic}`, { 
         headers: { "Authorization": `Bearer ${token}` } 
       });
@@ -257,7 +257,7 @@ export default function AddCreditPage() {
     setLoading(true);
     setMessage("");
     
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     try {
       const res = await fetch("http://localhost:4000/credits", {
         method: "POST",

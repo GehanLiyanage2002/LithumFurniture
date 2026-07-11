@@ -31,7 +31,7 @@ export default function CashierPage() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const token = localStorage.getItem("admin_token");
+      const token = sessionStorage.getItem("admin_token");
       try {
         const res = await fetch("http://localhost:4000/products", {
           headers: { "Authorization": `Bearer ${token}` }
@@ -107,7 +107,7 @@ export default function CashierPage() {
     setMessage("");
 
     const total = calculateTotal();
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     
     const saleData = {
       productName,
@@ -402,8 +402,42 @@ export default function CashierPage() {
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeReceipt(); }}>
           <div className="modal-content" style={{ maxWidth: '400px', background: '#fff' }}>
             
-            <div id="receipt-content">
-              {/* Receipt Content Hidden in Modal via CSS/Render logic */}
+            <div id="receipt-content" style={{ padding: '24px', maxHeight: '60vh', overflowY: 'auto', fontFamily: 'monospace', color: '#000' }}>
+              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <h2 style={{ margin: '0 0 5px 0', fontSize: '1.5rem', fontWeight: 'bold' }}>LITHUM FURNITURES</h2>
+                <p style={{ margin: '0', fontSize: '0.85rem' }}>No.76, Badulla Road, Ettampitiya.</p>
+                <p style={{ margin: '0', fontSize: '0.85rem' }}>Tel: 077 183 0883</p>
+              </div>
+              <div style={{ marginBottom: '15px', fontSize: '0.9rem', borderBottom: '1px dashed #ccc', paddingBottom: '10px' }}>
+                <p style={{ margin: '2px 0' }}><strong>Receipt #:</strong> {receiptData.receiptId}</p>
+                <p style={{ margin: '2px 0' }}><strong>Date:</strong> {receiptData.date}</p>
+              </div>
+              <table style={{ width: '100%', fontSize: '0.9rem', marginBottom: '15px', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px dashed #ccc' }}>
+                    <th style={{ textAlign: 'left', padding: '5px 0' }}>Item</th>
+                    <th style={{ textAlign: 'center', padding: '5px 0' }}>Qty</th>
+                    <th style={{ textAlign: 'right', padding: '5px 0' }}>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: '8px 0' }}>{receiptData.productName}</td>
+                    <td style={{ textAlign: 'center', padding: '8px 0' }}>{receiptData.quantity}</td>
+                    <td style={{ textAlign: 'right', padding: '8px 0' }}>{(Number(receiptData.unitPrice) * receiptData.quantity).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style={{ fontSize: '0.9rem', borderTop: '1px dashed #ccc', paddingTop: '10px', textAlign: 'right' }}>
+                <p style={{ margin: '2px 0' }}>Subtotal: {(Number(receiptData.unitPrice) * receiptData.quantity).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                {receiptData.discountValue > 0 && (
+                  <p style={{ margin: '2px 0', color: '#dc2626' }}>Discount: - {Number(receiptData.discountValue).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                )}
+                <p style={{ margin: '5px 0', fontSize: '1.1rem', fontWeight: 'bold' }}>Total: LKR {Number(receiptData.totalPrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+              </div>
+              <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.85rem', color: '#666' }}>
+                <p>THANK YOU FOR YOUR BUSINESS!</p>
+              </div>
             </div>
 
             <div style={{ padding: '16px', background: '#F9FAFB', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', gap: '16px', borderRadius: '0 0 12px 12px' }}>

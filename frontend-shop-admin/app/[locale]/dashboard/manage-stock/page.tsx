@@ -42,7 +42,7 @@ export default function ManageStockPage() {
 
   const fetchProducts = async () => {
     try {
-      const token = localStorage.getItem("admin_token");
+      const token = sessionStorage.getItem("admin_token");
       const res = await fetch("http://localhost:4000/products", {
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -57,7 +57,7 @@ export default function ManageStockPage() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     if (!token) {
       router.push("/");
       return;
@@ -70,7 +70,7 @@ export default function ManageStockPage() {
     setAddLoading(true);
     setMessage("");
 
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     
     try {
       const res = await fetch("http://localhost:4000/products", {
@@ -118,7 +118,7 @@ export default function ManageStockPage() {
     
     if (!result.isConfirmed) return;
     
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     try {
       const res = await fetch(`http://localhost:4000/products/${id}`, {
         method: "DELETE",
@@ -136,7 +136,7 @@ export default function ManageStockPage() {
     if (!restockTargetProduct) return;
     setRestockLoading(true);
 
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     const amountToAdd = parseInt(restockAmount, 10);
     const newQuantity = restockTargetProduct.quantity + amountToAdd;
 

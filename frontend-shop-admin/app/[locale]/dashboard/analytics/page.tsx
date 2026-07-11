@@ -51,7 +51,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = localStorage.getItem("admin_token");
+      const token = sessionStorage.getItem("admin_token");
       if (!token) {
         router.push("/");
         return;

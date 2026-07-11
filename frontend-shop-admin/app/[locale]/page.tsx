@@ -16,7 +16,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     // If already logged in, redirect to dashboard
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     if (token) {
       router.push("/dashboard");
     }
@@ -39,7 +39,7 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
-      localStorage.setItem("admin_token", data.access_token);
+      sessionStorage.setItem("admin_token", data.access_token);
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.message || "An error occurred");

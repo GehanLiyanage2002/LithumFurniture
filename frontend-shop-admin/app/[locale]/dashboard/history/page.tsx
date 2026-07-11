@@ -69,7 +69,7 @@ export default function CreditHistoryPage() {
 
   const fetchHistory = async () => {
     try {
-      const token = localStorage.getItem("admin_token");
+      const token = sessionStorage.getItem("admin_token");
       const res = await fetch("http://localhost:4000/credits", {
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -84,7 +84,7 @@ export default function CreditHistoryPage() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     if (!token) {
       router.push("/");
       return;
@@ -95,7 +95,7 @@ export default function CreditHistoryPage() {
   const handleSettle = async (e: React.FormEvent) => {
     e.preventDefault();
     setSettleLoading(true);
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     try {
       const res = await fetch(`http://localhost:4000/credits/${settleTargetId}/recalculate`, {
         method: "POST",
@@ -124,7 +124,7 @@ export default function CreditHistoryPage() {
     
     // Fetch payment history
     try {
-      const token = localStorage.getItem("admin_token");
+      const token = sessionStorage.getItem("admin_token");
       const res = await fetch(`http://localhost:4000/credits/${credit.id}/payments`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -148,7 +148,7 @@ export default function CreditHistoryPage() {
     e.preventDefault();
     if (!payTargetCredit) return;
     setPayLoading(true);
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     try {
       const res = await fetch(`http://localhost:4000/credits/${payTargetCredit.id}/pay`, {
         method: "POST",

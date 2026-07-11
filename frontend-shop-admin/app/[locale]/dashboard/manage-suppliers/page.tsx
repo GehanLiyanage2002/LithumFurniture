@@ -43,7 +43,7 @@ export default function ManageSuppliersPage() {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem("admin_token");
+      const token = sessionStorage.getItem("admin_token");
       if (!token) {
         router.push("/");
         return;
@@ -73,7 +73,7 @@ export default function ManageSuppliersPage() {
   const handleAddSupplier = async (e: React.FormEvent) => {
     e.preventDefault();
     setAddSupplierLoading(true);
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     try {
       const res = await fetch("http://localhost:4000/suppliers", {
         method: "POST",
@@ -102,7 +102,7 @@ export default function ManageSuppliersPage() {
     });
     if (!result.isConfirmed) return;
     
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     await fetch(`http://localhost:4000/suppliers/${id}`, {
       method: "DELETE",
       headers: { "Authorization": `Bearer ${token}` }
@@ -117,7 +117,7 @@ export default function ManageSuppliersPage() {
       return;
     }
     setAddProductLoading(true);
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     try {
       const res = await fetch("http://localhost:4000/products", {
         method: "POST",
@@ -156,7 +156,7 @@ export default function ManageSuppliersPage() {
     });
     if (!result.isConfirmed) return;
     
-    const token = localStorage.getItem("admin_token");
+    const token = sessionStorage.getItem("admin_token");
     await fetch(`http://localhost:4000/products/${id}`, {
       method: "DELETE",
       headers: { "Authorization": `Bearer ${token}` }

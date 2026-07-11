@@ -42,7 +42,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         url: configService.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: true, // Note: Set to false in production!
-        ssl: {
+        ssl: configService.get<string>('DATABASE_URL')?.includes('localhost') ? false : {
           rejectUnauthorized: false, // Required for Supabase connections
         },
       }),
