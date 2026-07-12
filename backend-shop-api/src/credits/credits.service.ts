@@ -62,8 +62,8 @@ Have a great day!`;
     else if (actualMonths === 6) newInterestRate = 25;
     else if (actualMonths >= 7) newInterestRate = 35;
 
-    const payable = Number(credit.productPrice) - Number(credit.discount || 0) - Number(credit.downPayment);
-    const newTotalPayment = payable + (payable * newInterestRate / 100);
+    const payable = Math.max(0, Number(credit.productPrice) - Number(credit.discount || 0) - Number(credit.downPayment));
+    const newTotalPayment = Math.round(payable + (payable * newInterestRate / 100));
 
     const remainingToPay = newTotalPayment - Number(credit.paidAmount || 0);
 
@@ -107,7 +107,10 @@ Have a great day!`;
       credit.monthlyInstallment = 0;
     } else if (remainingMonths > 0) {
       // Recalculate upcoming monthly payment
-      credit.monthlyInstallment = remainingBalance / remainingMonths;
+      credit.monthlyInstallment = Math.round(remainingBalance / remainingMonths);
+    } else {
+      // If remaining months is 0 or less but there is still a balance, they are overdue
+      credit.monthlyInstallment = Math.round(remainingBalance);
     }
 
     return this.creditsRepository.save(credit);

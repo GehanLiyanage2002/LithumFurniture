@@ -37,15 +37,19 @@ import { ScheduleModule } from '@nestjs/schedule';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        url: configService.get<string>('DATABASE_URL'),
-        autoLoadEntities: true,
-        synchronize: true, // Note: Set to false in production!
-        ssl: configService.get<string>('DATABASE_URL')?.includes('localhost') ? false : {
-          rejectUnauthorized: false, // Required for Supabase connections
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const isSqlite = configService.get<string>('DATABASE_TYPE') === 'sqlite';
+        return {
+          type: configService.get<string>('DATABASE_TYPE') as any || 'postgres',
+          url: !isSqlite ? configService.get<string>('DATABASE_URL') : undefined,
+          database: isSqlite ? ':memory:' : undefined,
+          autoLoadEntities: true,
+          synchronize: true, // Note: Set to false in production!
+          ssl: configService.get<string>('DATABASE_URL')?.includes('localhost') || isSqlite ? false : {
+            rejectUnauthorized: false, // Required for Supabase connections
+          },
+        };
+      },
     }),
     
     AuthModule,
