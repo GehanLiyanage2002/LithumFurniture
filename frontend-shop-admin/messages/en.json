@@ -69,7 +69,8 @@
     "guide_3": "Items can be exchanged within 7 days.",
     "guide_4": "For discounts above 15%, manager approval is needed.",
     "print": "Print Receipt",
-    "close": "Close"
+    "close": "Close",
+    "out_of_stock_checkout": "This item is out of stock and cannot be checked out."
   },
   "AddCredit": {
     "title": "Provide Goods on Credit",
@@ -110,7 +111,8 @@
     "fixed_amount": "Fixed Amount (LKR)",
     "percentage": "Percentage (%)",
     "discount_value": "Discount Value",
-    "discount_applied": "Discount Applied"
+    "discount_applied": "Discount Applied",
+    "out_of_stock_credit": "This item is out of stock and cannot be purchased on credit."
   },
   "ManageStock": {
     "title": "Manage Stock",
@@ -304,6 +306,8 @@
     "customer_face": "Customer Face",
     "nic_front": "NIC Front",
     "nic_rear": "NIC Rear",
-    "not_provided": "Not Provided"
+    "not_provided": "Not Provided",
+    "all_purchases_collection": "All Purchases Collection",
+    "total_active_due": "Total Active Due"
   }
 }

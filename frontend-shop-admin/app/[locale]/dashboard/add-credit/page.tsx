@@ -25,6 +25,7 @@ export default function AddCreditPage() {
 
   const [discountType, setDiscountType] = useState("NONE");
   const [discountValue, setDiscountValue] = useState("");
+  const [outOfStock, setOutOfStock] = useState(false);
 
   const [nicFront, setNicFront] = useState<string | null>(null);
   const [nicRear, setNicRear] = useState<string | null>(null);
@@ -239,6 +240,16 @@ export default function AddCreditPage() {
       return;
     }
 
+    const selectedProduct = products.find(p => p.productName === productName);
+    if (selectedProduct && selectedProduct.quantity <= 0) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Out of Stock',
+        text: 'This item is out of stock (Quantity: 0) and cannot be purchased on credit.',
+      });
+      return;
+    }
+
     const result = await Swal.fire({
       title: 'Confirm Submission',
       text: "Are you sure you want to submit this credit record?",
@@ -394,9 +405,10 @@ export default function AddCreditPage() {
             </div>
           </div>
 
-          <div class="signatures">
-            <div class="sig-line">Customer Signature</div>
-            <div class="sig-line">Authorized Signatory</div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 60px; padding: 0 20px;">
+            <div style="width: 200px; border-top: 1px solid #111; text-align: center; padding-top: 8px; font-weight: 600; color: #111;">Customer Signature</div>
+            <div style="width: 120px; height: 120px; border: 1px dashed #111;"></div>
+            <div style="width: 200px; border-top: 1px solid #111; text-align: center; padding-top: 8px; font-weight: 600; color: #111;">Authorized Signatory</div>
           </div>
 
           <div class="footer">
@@ -453,6 +465,7 @@ export default function AddCreditPage() {
     setCustomerFaceImage(null); 
     stopCamera();
     setMessage("");
+    setOutOfStock(false);
   };
 
   return (
@@ -491,7 +504,19 @@ export default function AddCreditPage() {
                 )}
               </label>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <input required type="text" className="input-field" style={{ flex: 1 }} value={nic} onChange={e => setNic(e.target.value)} placeholder="Enter NIC" />
+                <input required type="text" className="input-field" style={{ flex: 1 }} value={nic} onChange={e => {
+                  let val = e.target.value.toUpperCase();
+                  if (!/^[0-9]{0,12}$/.test(val) && !/^[0-9]{1,9}[VX]?$/.test(val)) return;
+                  setNic(val);
+                  if (val === "") {
+                    setFirstName("");
+                    setLastName("");
+                    setMobile1("");
+                    setMobile2("");
+                    setNicFront(null);
+                    setNicRear(null);
+                  }
+                }} placeholder="Enter NIC (9 digits + V/X or 12 digits)" maxLength={12} />
                 <button type="button" onClick={handleNicSearch} disabled={isSearchingNic || !nic} className="btn-primary" style={{ padding: '0 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Search size={18} /> {isSearchingNic ? '...' : 'Search'}
                 </button>
@@ -522,20 +547,35 @@ export default function AddCreditPage() {
               list="product-list"
               className="input-field" 
               value={productName} 
+              style={{ borderColor: outOfStock ? 'var(--error)' : undefined, borderWidth: outOfStock ? '2px' : undefined }}
               onChange={e => {
                 const val = e.target.value;
                 setProductName(val);
+                setOutOfStock(false);
                 if (val.trim() === "") {
                   setProductPrice("");
                 } else {
                   const selected = products.find(p => p.productName === val);
                   if (selected) {
+                    if (selected.quantity <= 0) {
+                      setOutOfStock(true);
+                      Swal.fire({
+                        icon: 'warning',
+                        title: 'Out of Stock',
+                        text: 'This item is out of stock and cannot be selected.',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 4000
+                      });
+                    }
                     setProductPrice(selected.unitPrice.toString());
                   }
                 }
               }}
               placeholder={t('select_product')}
             />
+            {outOfStock && <small style={{ color: 'var(--error)', marginTop: '4px', display: 'block', fontWeight: 600 }}>{t('out_of_stock_credit')}</small>}
             <datalist id="product-list">
               {products.map(p => (
                 <option key={p.id} value={p.productName} />

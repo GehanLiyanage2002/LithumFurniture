@@ -20,6 +20,7 @@ export default function CashierPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [outOfStock, setOutOfStock] = useState(false);
 
   const [productName, setProductName] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
@@ -87,6 +88,7 @@ export default function CashierPage() {
     setDiscountType("NONE");
     setDiscountValue("");
     setMessage("");
+    setOutOfStock(false);
   };
 
   const handleCheckout = async (e: React.FormEvent) => {
@@ -103,6 +105,19 @@ export default function CashierPage() {
     
     if (!result.isConfirmed) return;
     
+    const selectedProduct = products.find(p => p.productName === productName);
+    if (selectedProduct) {
+      const requestedQty = parseInt(quantity, 10) || 1;
+      if (selectedProduct.quantity < requestedQty) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Insufficient Stock',
+          text: `Only ${selectedProduct.quantity} item(s) left in stock. You requested ${requestedQty}.`,
+        });
+        return;
+      }
+    }
+
     setLoading(true);
     setMessage("");
 
@@ -155,6 +170,7 @@ export default function CashierPage() {
     setDiscountType("NONE");
     setDiscountValue("");
     setMessage("");
+    setOutOfStock(false);
   };
 
   const printReceipt = () => {
@@ -248,9 +264,13 @@ export default function CashierPage() {
             </div>
           </div>
 
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 60px; padding: 0 40px;">
+            <div style="width: 120px; height: 120px; border: 1px dashed #111;"></div>
+            <div style="width: 200px; border-top: 1px solid #111; text-align: center; padding-top: 8px; font-weight: 600; color: #111;">Authorized Signature</div>
+          </div>
+
           <div class="footer">
             <p><strong>THANK YOU FOR YOUR BUSINESS!</strong></p>
-            <p>Items can be exchanged within 7 days with the original receipt.</p>
           </div>
         </body>
       </html>
@@ -288,20 +308,35 @@ export default function CashierPage() {
               list="stock-products"
               className="input-field" 
               value={productName} 
+              style={{ borderColor: outOfStock ? 'var(--error)' : undefined, borderWidth: outOfStock ? '2px' : undefined }}
               onChange={e => {
                 const val = e.target.value;
                 setProductName(val);
+                setOutOfStock(false);
                 if (val.trim() === "") {
                   setUnitPrice("");
                 } else {
                   const selected = products.find(p => p.productName === val);
                   if (selected) {
+                    if (selected.quantity <= 0) {
+                      setOutOfStock(true);
+                      Swal.fire({
+                        icon: 'warning',
+                        title: 'Out of Stock',
+                        text: 'This item is out of stock.',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 4000
+                      });
+                    }
                     setUnitPrice(selected.unitPrice.toString());
                   }
                 }
               }}
               placeholder={t('select_product')}
             />
+            {outOfStock && <small style={{ color: 'var(--error)', marginTop: '4px', display: 'block', fontWeight: 600 }}>{t('out_of_stock_checkout')}</small>}
             <datalist id="stock-products">
               {products.map(p => (
                 <option key={p.id} value={p.productName} />

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CashSale } from './cash-sale.entity';
@@ -16,11 +16,14 @@ export class CashSalesService {
   async create(data: Partial<CashSale>): Promise<CashSale> {
     let totalCost = 0;
     
-    // Find product to get cost price
+    // Find product to get cost price and check stock
     if (data.productName && data.quantity) {
       const allProducts = await this.productsService.findAll();
       const product = allProducts.find(p => p.productName === data.productName);
       if (product) {
+        if (product.quantity < data.quantity) {
+          throw new BadRequestException(`Product '${data.productName}' does not have enough stock. Available: ${product.quantity}, Requested: ${data.quantity}`);
+        }
         totalCost = Number(product.costPrice || 0) * data.quantity;
       }
     }

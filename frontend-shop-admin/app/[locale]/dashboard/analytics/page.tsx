@@ -237,9 +237,13 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 60px; padding: 0 40px;">
+            <div style="width: 120px; height: 120px; border: 1px dashed #111;"></div>
+            <div style="width: 200px; border-top: 1px solid #111; text-align: center; padding-top: 8px; font-weight: 600; color: #111;">Authorized Signature</div>
+          </div>
+
           <div class="footer">
             <p><strong>THANK YOU FOR YOUR BUSINESS!</strong></p>
-            <p>Items can be exchanged within 7 days with the original receipt.</p>
           </div>
         </body>
       </html>

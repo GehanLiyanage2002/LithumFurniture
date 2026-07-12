@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -20,6 +20,13 @@ export class CreditsService {
   ) {}
 
   async create(createCreditDto: CreateCreditDto): Promise<Credit> {
+    if (createCreditDto.productName) {
+      const product = await this.productsService.findByName(createCreditDto.productName);
+      if (!product || product.quantity <= 0) {
+        throw new BadRequestException(`Product '${createCreditDto.productName}' is out of stock and cannot be purchased.`);
+      }
+    }
+
     const credit = this.creditsRepository.create(createCreditDto);
     const saved = await this.creditsRepository.save(credit);
     

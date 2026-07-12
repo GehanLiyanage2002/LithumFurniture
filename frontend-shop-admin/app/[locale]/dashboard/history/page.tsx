@@ -57,6 +57,7 @@ export default function CreditHistoryPage() {
   // Profile Modal State
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [profileTargetCredit, setProfileTargetCredit] = useState<Credit | null>(null);
+  const [customerCredits, setCustomerCredits] = useState<Credit[]>([]);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
   // Search, Filter, and Pagination State
@@ -172,9 +173,21 @@ export default function CreditHistoryPage() {
     }
   };
 
-  const openProfileModal = (credit: Credit) => {
+  const openProfileModal = async (credit: Credit) => {
     setProfileTargetCredit(credit);
     setProfileModalOpen(true);
+    setCustomerCredits([]); // reset
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch(`http://localhost:4000/credits/customer/history/${credit.nic}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setCustomerCredits(await res.json());
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const isSameDay = (d1: Date, d2: Date) => d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
@@ -592,6 +605,57 @@ export default function CreditHistoryPage() {
                   )}
                 </div>
               </div>
+
+              <h4 style={{ fontSize: '1rem', marginTop: '24px', marginBottom: '12px', color: 'var(--text-main)', borderBottom: '1px solid var(--border)', paddingBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                <span>{t('all_purchases_collection')}</span>
+                {customerCredits.length > 0 && (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--error)' }}>
+                    {t('total_active_due')}: LKR {
+                      customerCredits
+                        .filter(c => (c.status || 'ACTIVE') !== 'COMPLETED')
+                        .reduce((sum, c) => sum + Math.max(0, Number(c.totalPayment) - Number(c.paidAmount || 0)), 0)
+                        .toLocaleString('en-US', {minimumFractionDigits: 2})
+                    }
+                  </span>
+                )}
+              </h4>
+              
+              {customerCredits.length > 0 ? (
+                <div style={{ maxHeight: '200px', overflowY: 'auto', background: '#fff', border: '1px solid var(--border)', borderRadius: '8px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                    <thead style={{ background: '#F9FAFB', borderBottom: '1px solid var(--border)' }}>
+                      <tr>
+                        <th style={{ padding: '8px 12px', textAlign: 'left' }}>{t('col_product')}</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'left' }}>{t('total').replace(':', '')}</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'left' }}>{t('due').replace(':', '')}</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'left' }}>{t('col_status')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {customerCredits.map(c => {
+                        const due = Math.max(0, Number(c.totalPayment) - Number(c.paidAmount || 0));
+                        return (
+                          <tr key={c.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                            <td style={{ padding: '8px 12px' }}>
+                              <div style={{ fontWeight: 600 }}>{c.productName}</div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{new Date(c.createdAt).toLocaleDateString()}</div>
+                            </td>
+                            <td style={{ padding: '8px 12px' }}>LKR {Number(c.totalPayment).toLocaleString()}</td>
+                            <td style={{ padding: '8px 12px', color: due > 0 ? 'var(--error)' : 'var(--success)' }}>LKR {due.toLocaleString()}</td>
+                            <td style={{ padding: '8px 12px' }}>
+                              <span className={(c.status || 'ACTIVE') === 'COMPLETED' ? 'badge badge-success' : 'badge badge-primary'} style={{ fontSize: '0.7rem', padding: '2px 6px' }}>
+                                {c.status === 'COMPLETED' ? t('completed') : t('active')}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '16px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Loading purchases...</div>
+              )}
 
             </div>
           </div>
